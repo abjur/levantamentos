@@ -1,0 +1,106 @@
+---
+title: "Análise Franquias"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  message = FALSE, 
+  warning = FALSE,
+  fig.align = "center",
+  comment = "#>",
+  out.width = "100%"
+)
+library(magrittr)
+franquias_base <- readr::read_rds("~/Documents/levantamentos/data-raw/luiz-estevam/bases/franquias_base.rds")
+cores_abj <-  viridis::viridis(2, 1, .2, .8)
+pct <- function(x){scales::percent(x, accuracy = .1)}
+```
+
+#### Tempos da 2ª instância.
+
+Foram retiradas as medianas dos períodos abaixo:
+
+-  Entre a data do recuso e a data de distribuição. 
+-  Entre a data distribuição e data julgamento.
+
+
+```{r}
+
+cores_abj <-  viridis::viridis(2, 1, .2, .8)
+franquias_base %>%
+  dplyr::transmute(tempo_recurso = data_da_distribuicao - data_do_recurso_peticao,
+                   tempo_acordao =  data_julgamento - data_da_distribuicao) %>%
+  tidyr::pivot_longer(c(tempo_recurso, tempo_acordao)) %>%
+  dplyr::filter(value > 0) %>%
+  dplyr::group_by(name) %>%
+  dplyr::summarise(tempo_mediano = median(value)) %>%
+   dplyr::mutate(
+    name = dplyr::case_when(
+      stringr::str_detect(name, stringr::regex("tempo_acordao")) ~ "Tempo mediano acordão",
+      stringr::str_detect(name, stringr::regex("tempo_recurso")) ~ "Tempo mediano recurso",
+      TRUE ~ name
+    )
+  ) %>% 
+  ggplot2::ggplot()+
+  ggplot2::aes(x = tempo_mediano, y = name) +
+  ggplot2::geom_col(fill = cores_abj[1], width = 0.5)+
+  ggplot2::labs(x = "Tempo (dias)", y = "Tempos medianos") +
+  ggplot2::theme_minimal(10)
+
+```
+
+
+
+#### Grau de reforma.
+
+- Realizado em comparação ao total de casos.
+
+
+```{r}
+franquias_base %>%
+  dplyr::count(resultado_reformou_ou_nao) %>%
+  dplyr::mutate(prop = n/sum(n), lab = pct(prop)) %>%
+  obsFase3:::pizza()
+```
+
+
+#### Resultado da Reforma
+
+- Realizado a proporção entre o resultado da reforma e os autores do pedido.
+
+```{r}
+  franquias_base %>%
+  dplyr::group_by(autor) %>%
+  dplyr::count(resultado_reformou_ou_nao) %>%
+  dplyr::mutate(prop = n/sum(n)) %>%
+  ggplot2::ggplot() +
+  ggplot2::aes(y = autor, x = prop, fill = resultado_reformou_ou_nao, label = pct(prop)) +
+  ggplot2::geom_col(width = 0.5) +
+  ggplot2::geom_label(ggplot2::aes(x = prop), size = 2.5, colour = "white", position =  ggplot2::position_stack(vjust = .5)) +
+  ggplot2::scale_x_continuous(labels = scales::percent) +
+  ggplot2::scale_fill_viridis_d(begin = .2, end = .8) +
+  ggplot2::labs(y = "Autor", x = "Proporção", fill = "Resultado da Refoma") +
+  ggplot2::theme_minimal(10)
+```
+
+
+
+
+- Realizado a proporção entre o resultado da reforma e os segmentos da empresa.
+
+```{r}
+  franquias_base %>%
+  dplyr::group_by(segmento_da_empresa) %>%
+  dplyr::count(resultado_reformou_ou_nao) %>%
+  dplyr::mutate(prop = n/sum(n)) %>%
+  ggplot2::ggplot() +
+  ggplot2::aes(y = segmento_da_empresa, x = prop, fill = resultado_reformou_ou_nao, label = pct(prop)) +
+  ggplot2::geom_col() +
+  ggplot2::geom_label(ggplot2::aes(x = prop), size = 2, colour = "white", position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::scale_x_continuous(labels = scales::percent) +
+  ggplot2::scale_fill_viridis_d(begin = .2, end = .8) +
+  ggplot2::labs(y = "Segmento da empresa", x = "Proporção", fill = "Resultado da Refoma") +
+  ggplot2::theme_minimal(10)
+```
