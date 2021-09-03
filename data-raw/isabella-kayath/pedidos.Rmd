@@ -1,0 +1,62 @@
+---
+title: "Subclasses"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  message = FALSE, 
+  warning = FALSE,
+  fig.align = "center",
+  comment = "#>",
+  out.width = "100%"
+)
+library(magrittr)
+subclasses_base <- readr::read_rds("~/Documents/levantamentos/data-raw/isabella-kayath/bases/subclasses_base.rds")
+
+cores_abj <-  viridis::viridis(2, 1, .2, .8)
+pct <- function(x){scales::percent(x, accuracy = .1)}
+```
+
+
+##### Quantos casos tiveram subclasses, quantos não (porcentagem):
+
+```{r}
+
+subclasses_base %>%
+  dplyr::filter(previsao_subclasse != "NA") %>%
+  dplyr::count(previsao_subclasse) %>%
+  dplyr::mutate(
+    previsao_subclasse = dplyr::case_when(
+      stringr::str_detect(previsao_subclasse, stringr::regex("sim")) ~ "Sim",
+      stringr::str_detect(previsao_subclasse, stringr::regex("nao")) ~ "Não",
+      TRUE ~ previsao_subclasse
+    )
+  ) %>%
+  dplyr::mutate(prop = n/sum(n), lab = pct(prop)) %>%
+  obsFase3:::pizza()
+```
+
+
+
+####  Houve a decretação de subclasses e eram todos credores parceiros. 
+
+- Realizada a proporção quando o caso havia "SIM" na coluna "Previsão de Subclasses" e "SIM" na coluna "A subclasse é de credores colaboradores/fornecedores/estratégicos?". 
+
+
+```{r}
+subclasses_base %>%
+  dplyr::filter(subclasse_colaboradores != "NA") %>% 
+  dplyr::filter(previsao_subclasse == "sim") %>% 
+  dplyr::group_by(previsao_subclasse) %>% 
+  dplyr::count(subclasse_colaboradores) %>%
+  dplyr::arrange(desc(n)) %>%
+  janitor::adorn_totals() %>% 
+  dplyr::mutate(prop = pct(n/sum(n)*2)) %>%
+  purrr::set_names("Previsão de Subclasses", "A subclasse é de credores colaboradores/fornecedores/estratégicos?", "Quantidade", "%") %>%
+  knitr::kable()
+
+```
+
+

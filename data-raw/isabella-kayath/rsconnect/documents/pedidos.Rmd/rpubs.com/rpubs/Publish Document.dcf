@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/802355/33c0fc199d134604ab3835ca7134ece1
+bundleId: https://api.rpubs.com/api/v1/document/802355/33c0fc199d134604ab3835ca7134ece1
+url: http://rpubs.com/katerine-dev/802355
+when: 1630442924.24103
+lastSyncTime: 1630442924.24105
