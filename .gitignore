@@ -3,3 +3,8 @@
 .RData
 data-raw/isabella-kayath/bases
 data-raw/luiz-estevam/bases
+data-raw/jurimetria-usp/bases
+data-raw/jurimetria-usp/rds
+.Rdata
+.httr-oauth
+.DS_Store
