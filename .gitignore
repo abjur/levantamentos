@@ -5,6 +5,7 @@ data-raw/isabella-kayath/bases
 data-raw/luiz-estevam/bases
 data-raw/jurimetria-usp/bases
 data-raw/jurimetria-usp/rds
+data-raw/varas-empresariais-frederico/bases
 .Rdata
 .httr-oauth
 .DS_Store
