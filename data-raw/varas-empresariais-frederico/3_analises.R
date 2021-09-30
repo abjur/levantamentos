@@ -127,18 +127,16 @@ p_mes_ano <- aux_contagem %>%
   dplyr::filter(mes != "NA") %>%
   dplyr::group_by(ano) %>%
   dplyr::count(mes) %>%
-  dplyr::mutate(prop = n / sum(n)) %>%
   ggplot2::ggplot() +
-  ggplot2::aes(x = prop, y = forcats::fct_rev(mes), label = pct(prop)) +
+  ggplot2::aes(x = n, y = forcats::fct_rev(mes), label = n) +
   ggplot2::geom_col(fill = blue_abj) +
   ggplot2::facet_wrap(~ ano, scales = "free_x") +
   ggplot2::geom_label(
-    ggplot2::aes(x = prop),
+    ggplot2::aes(x = n),
     size = 2,
     position = ggplot2::position_stack(vjust = .5)
   ) +
-  ggplot2::scale_x_continuous(labels = scales::percent) +
-  ggplot2::labs(x = "Proporção", y = "Mês") +
+  ggplot2::labs(x = "Quantidade", y = "Mês") +
   ggplot2::theme_minimal(10)
 
 ggplot2::ggsave(
@@ -158,12 +156,15 @@ aux_tipo_empresario <- processos_filtrados %>%
   tidyr::unnest(partes) %>%
   dplyr::select(id_processo, distribuicao, controle, id_parte, nome, parte, papel) %>%
   dplyr::mutate(tipo_empresario = stringr::str_extract_all(nome, rx_tipoempresa)) %>%
-  dplyr::mutate(
-    tipo_empresario = toupper(stringr::str_remove_all(tipo_empresario, "[\\s\\.]"))
-  )
+  dplyr::mutate(tipo_empresario = purrr::map_chr(tipo_empresario, stringr::str_c, collapse = "|")) %>%
+  dplyr::mutate(tipo_empresario = toupper(stringr::str_remove_all(tipo_empresario, "[\\s\\.]"))) %>%
+  dplyr::mutate(tipo_empresario = dplyr::na_if(tipo_empresario, ""))
+
+
 
 p_tipo_empresario <- aux_tipo_empresario %>%
   dplyr::filter(!is.na(tipo_empresario)) %>%
+  dplyr::mutate(tipo_empresario = forcats::fct_lump_n(tipo_empresario, 5, other_level = "Outros")) %>%
   dplyr::count(tipo_empresario) %>%
   dplyr::mutate(pct = scales::percent(n/sum(n))) %>%
   dplyr::mutate(tipo_empresario = forcats::fct_reorder(tipo_empresario, n)) %>%
@@ -175,10 +176,31 @@ p_tipo_empresario <- aux_tipo_empresario %>%
     x = "Partes",
     y = "Tipo empresário"
   )
+
+
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tipo_empresario.png",
   p_tipo_empresario, width = 5, height = 3
 )
 
+# Tabelas com a porcentagem e quantidade de processos por Tipo empresario. (complementa o gráfico de cima)
+tabela_tempresario <-  aux_tipo_empresario %>%
+  dplyr::filter(!is.na(tipo_empresario)) %>%
+  dplyr::count(tipo_empresario) %>%
+  dplyr::arrange(desc(n)) %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Tipo empresário", "Quantidade", "%") %>%
+  #knitr::kable(caption = "Tipos empresarios")
 
+# Tabelas com a porcentagem e quantidade de processos por Vara.
+tabela_varas <-  processos_filtrados %>%
+  dplyr::count(vara) %>%
+  dplyr::arrange(desc(n)) %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Vara", "Quantidade", "%")
+  #knitr::kable(caption = "Quantidade de processos por Vara")
 
