@@ -44,8 +44,9 @@ franquias_base %>%
     )
   ) %>% 
   ggplot2::ggplot()+
-  ggplot2::aes(x = tempo_mediano, y = name) +
+  ggplot2::aes(x = tempo_mediano, y = name, label = tempo_mediano) +
   ggplot2::geom_col(fill = cores_abj[1], width = 0.5)+
+  ggplot2::geom_label(ggplot2::aes(x = tempo_mediano), size = 2.5, position =  ggplot2::position_stack(vjust = .5))+
   ggplot2::labs(x = "Tempo (dias)", y = "Tempos medianos") +
   ggplot2::theme_minimal(10)
 
