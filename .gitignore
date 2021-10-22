@@ -6,6 +6,8 @@ data-raw/luiz-estevam/bases
 data-raw/jurimetria-usp/bases
 data-raw/jurimetria-usp/rds
 data-raw/varas-empresariais-frederico/bases
+data-raw/anatocismo/tjsp
+data-raw/anatocismo/tjce
 .Rdata
 .httr-oauth
 .DS_Store
