@@ -103,53 +103,6 @@ aux_decisao %>%
   janitor::adorn_totals() %>%
   knitr::kable()
 
-# Contagens de processos (contagens por mês, ano, assunto)
-
-# Contagem de assuntos:
-processos_filtrados %>%
-  dplyr::filter(assunto != "NA") %>%
-  dplyr::mutate(assunto = forcats::fct_lump_n(assunto, 9, other_level = "Outros")) %>%
-  dplyr::count(assunto) %>%
-  dplyr::arrange(n) %>%
-  dplyr::mutate(prop = formattable::percent(n / sum(n))) %>%
-  janitor::adorn_totals() %>%
-  purrr::set_names("Assunto", "Quantidade", "%") %>%
-  knitr::kable()
-
-
-
-# Gŕafico de contagem por ano e mês
-cores_abj <-  viridis::viridis(2, 1, .2, .8)
-blue_abj <- cores_abj[1]
-pct <- function(x) {
-  scales::percent(x, accuracy = .1)
-}
-
-aux_contagem <- processos_filtrados %>%
-  dplyr::mutate(mes = lubridate::month(distribuicao, label = TRUE, locale = "pt_BR.UTF-8")) %>%
-  dplyr::mutate(ano = ano_dist)
-
-p_mes_ano <- aux_contagem %>%
-  dplyr::filter(mes != "NA") %>%
-  dplyr::group_by(ano) %>%
-  dplyr::count(mes) %>%
-  ggplot2::ggplot() +
-  ggplot2::aes(x = n, y = forcats::fct_rev(mes), label = n) +
-  ggplot2::geom_col(fill = blue_abj) +
-  ggplot2::facet_wrap(~ ano, scales = "free_x") +
-  ggplot2::geom_label(
-    ggplot2::aes(x = n),
-    size = 3,
-    position = ggplot2::position_stack(vjust = .5)
-  ) +
-  ggplot2::labs(x = "Quantidade", y = "Mês") +
-  ggplot2::theme_minimal(14)
-
-ggplot2::ggsave(
-  "data-raw/varas-empresariais-frederico/plot_mes_ano.png",
-  p_mes_ano, width = 7, height = 5
-)
-
 # Coluna nova com o tipo empresário
 rx_tipoempresa <- c(
   "LTDA", "E\\.?\\s?P\\.?\\s?P\\.?\\s?", " M\\.?\\s?E\\.?\\s?(?!\\w)",
@@ -164,7 +117,108 @@ aux_tipo_empresario <- processos_filtrados %>%
   dplyr::mutate(tipo_empresario = stringr::str_extract_all(nome, rx_tipoempresa)) %>%
   dplyr::mutate(tipo_empresario = purrr::map_chr(tipo_empresario, stringr::str_c, collapse = "|")) %>%
   dplyr::mutate(tipo_empresario = toupper(stringr::str_remove_all(tipo_empresario, "[\\s\\.]"))) %>%
-  dplyr::mutate(tipo_empresario = dplyr::na_if(tipo_empresario, ""))
+  dplyr::mutate(
+    tipo_empresario = dplyr::na_if(tipo_empresario, ""),
+    tipo_empresario = dplyr::case_when(
+      tipo_empresario == "LTDA|LTDA" ~ "LTDA",
+      tipo_empresario == "ME|ME" ~ "ME",
+      tipo_empresario == "SA|SA" ~ "SA",
+      TRUE ~ tipo_empresario
+    )
+  )
+
+# Coluna nova com polo
+unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
+
+ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
+passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
+
+aux_tipo_empresario %>%
+  dplyr::mutate(polo = dplyr::case_when(
+    parte %in% ativo | papel %in% ativo ~ "ativo",
+    parte %in% passivo | papel %in% passivo ~ "passivo"
+  )) %>%
+  dplyr::count(tipo_empresario, polo) %>%
+  tidyr::pivot_wider(names_from = polo, values_from = n) %>%
+  tidyr::replace_na(list(
+    tipo_empresario = "Pessoa física ou tipo não identificado", ativo = 0,
+    passivo = 0, `NA` = 0
+  )) %>%
+  purrr::set_names(
+    "Tipo empresário", "Polo ativo", "Polo passivo", "Não identificado"
+  )
+
+
+# Gráficos e tabelas ------------------------------------------------------
+cores_abj <-  viridis::viridis(2, 1, .2, .8)
+blue_abj <- cores_abj[1]
+pct <- function(x) {
+  scales::percent(x, accuracy = .1)
+}
+
+
+# Assunto -----------------------------------------------------------------
+
+t_assunto <- processos_filtrados %>%
+  dplyr::filter(assunto != "NA") %>%
+  dplyr::mutate(assunto = forcats::fct_lump_n(assunto, 9, other_level = "Outros")) %>%
+  dplyr::count(assunto) %>%
+  dplyr::arrange(n)
+t_assunto %>%
+  dplyr::mutate(prop = formattable::percent(n / sum(n))) %>%
+  janitor::adorn_totals() %>%
+  purrr::set_names("Assunto", "Quantidade", "%") %>%
+  knitr::kable()
+p_assunto <- t_assunto %>%
+  dplyr::mutate(
+    prop = n / sum(n),
+    lab = glue::glue("{n} ({formattable::percent(prop, 1)})"),
+    assunto = stringr::str_wrap(assunto, 20),
+    assunto = forcats::fct_reorder(assunto, n)
+  ) %>%
+  ggplot2::ggplot(ggplot2::aes(x = n, y = assunto, label = lab)) +
+  ggplot2::geom_col(fill = blue_abj) +
+  ggplot2::geom_label(size = 2, position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::labs(x = "Quantidade", y = "Assunto") +
+  ggplot2::theme_minimal(12)
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_assunto.png",
+  p_assunto, width = 7, height = 6
+)
+
+# Vara --------------------------------------------------------------------
+
+t_varas <- processos_filtrados %>%
+  dplyr::count(vara) %>%
+  dplyr::arrange(desc(n))
+tabela_varas <- t_varas %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Vara", "Quantidade", "%")
+p_vara <- t_varas %>%
+  dplyr::mutate(
+    vara = stringr::str_wrap(vara, 20),
+    vara = forcats::fct_reorder(vara, n),
+    prop = n/sum(n),
+    lab = glue::glue("{n} ({pct(prop)})")
+  ) %>%
+  ggplot2::ggplot(ggplot2::aes(x = n, y = vara, label = lab)) +
+  ggplot2::geom_col(fill = blue_abj) +
+  ggplot2::geom_label(size = 4, position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::theme_minimal(14) +
+  ggplot2::labs(
+    x = "Quantidade",
+    y = "Vara"
+  )
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_vara.png",
+  p_vara, width = 12, height = 6
+)
+
+
+
+# Tipo empresário ---------------------------------------------------------
 
 p_tipo_empresario <- aux_tipo_empresario %>%
   dplyr::filter(!is.na(tipo_empresario)) %>%
@@ -197,16 +251,6 @@ tabela_tempresario <-  aux_tipo_empresario %>%
   purrr::set_names("Tipo empresário", "Quantidade", "%")
   #knitr::kable(caption = "Tipos empresarios")
 
-# Tabelas com a porcentagem e quantidade de processos por Vara.
-tabela_varas <-  processos_filtrados %>%
-  dplyr::count(vara) %>%
-  dplyr::arrange(desc(n)) %>%
-  janitor::adorn_totals() %>%
-  dplyr::mutate(prop = n / sum(n) * 2) %>%
-  dplyr::mutate(prop = formattable::percent(prop)) %>%
-  purrr::set_names("Vara", "Quantidade", "%")
-  #knitr::kable(caption = "Quantidade de processos por Vara")
-
 writexl::write_xlsx(
   list(
     "classes primeiro grau" = classe_1grau,
@@ -215,4 +259,32 @@ writexl::write_xlsx(
     "varas" = tabela_varas
   ),
   "data-raw/varas-empresariais-frederico/tabelas_varas_empresariais.xlsx"
+)
+
+# Gráficos ----------------------------------------------------------------
+
+
+# Ano/mês
+aux_contagem <- processos_filtrados %>%
+  dplyr::mutate(mes = lubridate::month(distribuicao, label = TRUE, locale = "pt_BR.UTF-8")) %>%
+  dplyr::mutate(ano = ano_dist)
+p_mes_ano <- aux_contagem %>%
+  dplyr::filter(mes != "NA") %>%
+  dplyr::group_by(ano) %>%
+  dplyr::count(mes) %>%
+  ggplot2::ggplot() +
+  ggplot2::aes(x = n, y = forcats::fct_rev(mes), label = n) +
+  ggplot2::geom_col(fill = blue_abj) +
+  ggplot2::facet_wrap(~ ano, scales = "free_x") +
+  ggplot2::geom_label(
+    ggplot2::aes(x = n),
+    size = 3,
+    position = ggplot2::position_stack(vjust = .5)
+  ) +
+  ggplot2::labs(x = "Quantidade", y = "Mês") +
+  ggplot2::theme_minimal(14)
+
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_mes_ano.png",
+  p_mes_ano, width = 7, height = 5
 )
