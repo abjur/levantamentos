@@ -1,5 +1,24 @@
 library(magrittr)
 
+processos <- "data-raw/varas-empresariais-frederico/da_completa.rds" %>%
+  readr::read_rds() %>%
+  dplyr::mutate(
+    id_processo = abjutils::clean_cnj(id_processo),
+    distribuicao = dplyr::coalesce(distribuicao, recebido_em),
+    distribuicao = stringr::str_extract(distribuicao, "[0-9]{2}/[0-9]{2}/[0-9]{4}"),
+    distribuicao = lubridate::dmy(distribuicao),
+    ano_dist = dplyr::case_when(
+      !is.na(distribuicao) ~ lubridate::year(distribuicao),
+      is.na(distribuicao) ~ as.numeric(stringr::str_extract(
+        id_processo, "(?<=[0-9]{9})[0-9]{4}"
+      ))
+    )
+  )
+
+# filtrar dados até fev/2020
+processos_filtrados <- processos %>%
+  dplyr::filter(distribuicao < "2020-03-01" | ano_dist < 2020)
+
 # taxa de recorribilidade e reforma -------------------------------------------
 
 processos <- "data-raw/varas-empresariais-frederico/da_completa.rds" %>%
@@ -216,7 +235,142 @@ ggplot2::ggsave(
   p_vara, width = 12, height = 6
 )
 
+t_assunto <- processos_filtrados %>%
+  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  dplyr::count(assunto) %>%
+  dplyr::arrange(desc(n)) %>%
+  dplyr::mutate(assunto = forcats::lvls_reorder(assunto, c(2:20, 1)))
+tabela_assunto <- t_assunto %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Assunto", "Quantidade", "%")
+p_assunto <- t_assunto %>%
+  dplyr::mutate(
+    assunto = stringr::str_wrap(assunto, 20),
+    assunto = forcats::fct_reorder(assunto, n),
+    prop = n/sum(n),
+    lab = glue::glue("{n} ({pct(prop)})")
+  ) %>%
+  ggplot2::ggplot(ggplot2::aes(x = n, y = assunto, label = lab)) +
+  ggplot2::geom_col(fill = blue_abj) +
+  ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::theme_minimal(14) +
+  ggplot2::labs(
+    x = "Quantidade",
+    y = "Vara"
+  )
 
+t_assunto_ano <- processos_filtrados %>%
+  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  dplyr::count(assunto, ano_dist) %>%
+  dplyr::arrange(desc(n))
+tabela_assunto_ano <- t_assunto_ano %>%
+  dplyr::mutate(ano_dist = as.character(ano_dist)) %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  janitor::adorn_totals() %>%
+    dplyr::mutate(prop = n / sum(n) * 2) %>%
+    dplyr::mutate(prop = formattable::percent(prop)) %>%
+    purrr::set_names("Assunto", "Ano", "Quantidade", "%")
+
+t_assunto_vara <- processos_filtrados %>%
+  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  dplyr::count(assunto, vara) %>%
+  dplyr::arrange(desc(n))
+tabela_assunto_vara <- t_assunto_vara %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Assunto", "Vara", "Quantidade", "%")
+
+
+# valor da causa ----------------------------------------------------------
+t_valor <- processos_filtrados %>%
+  dplyr::select(id_processo, valor = valor_da_acao) %>%
+  dplyr::filter(!is.na(valor)) %>%
+  dplyr::mutate(
+    valor = stringr::str_remove_all(valor, "R\\$ "),
+    valor = stringr::str_remove_all(valor, "\\."),
+    valor = stringr::str_replace_all(valor, "\\,", "."),
+    valor = as.double(valor)
+  )
+
+p_valor <- t_valor %>%
+  ggplot2::ggplot(ggplot2::aes(x = valor)) +
+  ggplot2::geom_histogram(bins = 50, fill = cores_abj[1]) +
+  ggplot2::scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2)
+
+t_valor_assunto <- processos_filtrados %>%
+  dplyr::select(id_processo, assunto, valor = valor_da_acao) %>%
+  dplyr::filter(!is.na(valor)) %>%
+  dplyr::mutate(
+    valor = stringr::str_remove_all(valor, "R\\$ "),
+    valor = stringr::str_remove_all(valor, "\\."),
+    valor = stringr::str_replace_all(valor, "\\,", "."),
+    valor = as.double(valor)
+  ) %>%
+  dplyr::group_by(assunto) %>%
+  dplyr::summarise(mediana = median(valor)) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(assunto = dplyr::case_when(
+    mediana < 200000.00 ~ "Outros",
+    TRUE ~ assunto
+  )) %>%
+  dplyr::group_by(assunto) %>%
+  dplyr::summarise(mediana = sum(mediana)) %>%
+  dplyr::arrange(desc(mediana))
+
+t_valor_assunto <- processos_filtrados %>%
+  dplyr::select(id_processo, assunto, valor = valor_da_acao) %>%
+  dplyr::filter(!is.na(valor)) %>%
+  dplyr::mutate(
+    valor = stringr::str_remove_all(valor, "R\\$ "),
+    valor = stringr::str_remove_all(valor, "\\."),
+    valor = stringr::str_replace_all(valor, "\\,", "."),
+    valor = as.double(valor)
+  ) %>%
+  dplyr::group_by(assunto) %>%
+  dplyr::summarise(mediana = median(valor)) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(assunto = dplyr::case_when(
+    mediana < 200000.00 ~ "Outros",
+    TRUE ~ assunto
+  )) %>%
+  dplyr::group_by(assunto) %>%
+  dplyr::summarise(mediana = sum(mediana)) %>%
+  dplyr::arrange(desc(mediana))
+
+t_valor_vara <- processos_filtrados %>%
+  dplyr::select(id_processo, vara, valor = valor_da_acao) %>%
+  dplyr::filter(!is.na(valor)) %>%
+  dplyr::mutate(
+    valor = stringr::str_remove_all(valor, "R\\$ "),
+    valor = stringr::str_remove_all(valor, "\\."),
+    valor = stringr::str_replace_all(valor, "\\,", "."),
+    valor = as.double(valor)
+  ) %>%
+  dplyr::group_by(vara) %>%
+  dplyr::summarise(mediana = median(valor)) %>%
+  dplyr::ungroup() %>%
+  dplyr::arrange(desc(mediana))
+
+t_valor_assunto_vara <- processos_filtrados %>%
+  dplyr::select(id_processo, assunto, vara, valor = valor_da_acao) %>%
+  dplyr::filter(!is.na(valor)) %>%
+  dplyr::mutate(
+    valor = stringr::str_remove_all(valor, "R\\$ "),
+    valor = stringr::str_remove_all(valor, "\\."),
+    valor = stringr::str_replace_all(valor, "\\,", "."),
+    valor = as.double(valor)
+  ) %>%
+  dplyr::group_by(assunto, vara) %>%
+  dplyr::summarise(mediana = median(valor)) %>%
+  dplyr::ungroup() %>%
+  dplyr::arrange(desc(mediana))
 
 # Tipo empresário ---------------------------------------------------------
 
