@@ -132,7 +132,7 @@ rx_tipoempresa <- c(
 
 aux_tipo_empresario <- processos_filtrados %>%
   tidyr::unnest(partes) %>%
-  dplyr::select(id_processo, distribuicao, controle, id_parte, nome, parte, papel) %>%
+  dplyr::select(id_processo, assunto, distribuicao, controle, id_parte, nome, parte, papel) %>%
   dplyr::mutate(tipo_empresario = stringr::str_extract_all(nome, rx_tipoempresa)) %>%
   dplyr::mutate(tipo_empresario = purrr::map_chr(tipo_empresario, stringr::str_c, collapse = "|")) %>%
   dplyr::mutate(tipo_empresario = toupper(stringr::str_remove_all(tipo_empresario, "[\\s\\.]"))) %>%
@@ -145,6 +145,7 @@ aux_tipo_empresario <- processos_filtrados %>%
       TRUE ~ tipo_empresario
     )
   )
+
 
 # Coluna nova com polo
 unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
@@ -205,6 +206,36 @@ ggplot2::ggsave(
   p_assunto, width = 7, height = 6
 )
 
+
+# Assunto ano -------------------------------------------------------------
+
+t_assunto_ano <- processos_filtrados %>%
+  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  dplyr::count(assunto, ano_dist) %>%
+  dplyr::arrange(desc(n))
+tabela_assunto_ano <- t_assunto_ano %>%
+  dplyr::mutate(ano_dist = as.character(ano_dist)) %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Assunto", "Ano", "Quantidade", "%")
+
+
+# Assunto vara ------------------------------------------------------------
+
+t_assunto_vara <- processos_filtrados %>%
+  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
+  dplyr::filter(!is.na(assunto)) %>%
+  dplyr::count(assunto, vara) %>%
+  dplyr::arrange(desc(n))
+tabela_assunto_vara <- t_assunto_vara %>%
+  janitor::adorn_totals() %>%
+  dplyr::mutate(prop = n / sum(n) * 2) %>%
+  dplyr::mutate(prop = formattable::percent(prop)) %>%
+  purrr::set_names("Assunto", "Vara", "Quantidade", "%")
+
 # Vara --------------------------------------------------------------------
 
 t_varas <- processos_filtrados %>%
@@ -235,59 +266,7 @@ ggplot2::ggsave(
   p_vara, width = 12, height = 6
 )
 
-t_assunto <- processos_filtrados %>%
-  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
-  dplyr::filter(!is.na(assunto)) %>%
-  dplyr::count(assunto) %>%
-  dplyr::arrange(desc(n)) %>%
-  dplyr::mutate(assunto = forcats::lvls_reorder(assunto, c(2:20, 1)))
-tabela_assunto <- t_assunto %>%
-  janitor::adorn_totals() %>%
-  dplyr::mutate(prop = n / sum(n) * 2) %>%
-  dplyr::mutate(prop = formattable::percent(prop)) %>%
-  purrr::set_names("Assunto", "Quantidade", "%")
-p_assunto <- t_assunto %>%
-  dplyr::mutate(
-    assunto = stringr::str_wrap(assunto, 20),
-    assunto = forcats::fct_reorder(assunto, n),
-    prop = n/sum(n),
-    lab = glue::glue("{n} ({pct(prop)})")
-  ) %>%
-  ggplot2::ggplot(ggplot2::aes(x = n, y = assunto, label = lab)) +
-  ggplot2::geom_col(fill = blue_abj) +
-  ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
-  ggplot2::theme_minimal(14) +
-  ggplot2::labs(
-    x = "Quantidade",
-    y = "Vara"
-  )
-
-t_assunto_ano <- processos_filtrados %>%
-  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
-  dplyr::filter(!is.na(assunto)) %>%
-  dplyr::count(assunto, ano_dist) %>%
-  dplyr::arrange(desc(n))
-tabela_assunto_ano <- t_assunto_ano %>%
-  dplyr::mutate(ano_dist = as.character(ano_dist)) %>%
-  dplyr::filter(!is.na(assunto)) %>%
-  janitor::adorn_totals() %>%
-    dplyr::mutate(prop = n / sum(n) * 2) %>%
-    dplyr::mutate(prop = formattable::percent(prop)) %>%
-    purrr::set_names("Assunto", "Ano", "Quantidade", "%")
-
-t_assunto_vara <- processos_filtrados %>%
-  dplyr::mutate(assunto = forcats::fct_lump(assunto, n = 19, other_level = "Outros"))  %>%
-  dplyr::filter(!is.na(assunto)) %>%
-  dplyr::count(assunto, vara) %>%
-  dplyr::arrange(desc(n))
-tabela_assunto_vara <- t_assunto_vara %>%
-  janitor::adorn_totals() %>%
-  dplyr::mutate(prop = n / sum(n) * 2) %>%
-  dplyr::mutate(prop = formattable::percent(prop)) %>%
-  purrr::set_names("Assunto", "Vara", "Quantidade", "%")
-
-
-# valor da causa ----------------------------------------------------------
+# Valor ----------------------------------------------------------
 t_valor <- processos_filtrados %>%
   dplyr::select(id_processo, valor = valor_da_acao) %>%
   dplyr::filter(!is.na(valor)) %>%
@@ -297,32 +276,14 @@ t_valor <- processos_filtrados %>%
     valor = stringr::str_replace_all(valor, "\\,", "."),
     valor = as.double(valor)
   )
-
 p_valor <- t_valor %>%
   ggplot2::ggplot(ggplot2::aes(x = valor)) +
   ggplot2::geom_histogram(bins = 50, fill = cores_abj[1]) +
   ggplot2::scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2)
 
-t_valor_assunto <- processos_filtrados %>%
-  dplyr::select(id_processo, assunto, valor = valor_da_acao) %>%
-  dplyr::filter(!is.na(valor)) %>%
-  dplyr::mutate(
-    valor = stringr::str_remove_all(valor, "R\\$ "),
-    valor = stringr::str_remove_all(valor, "\\."),
-    valor = stringr::str_replace_all(valor, "\\,", "."),
-    valor = as.double(valor)
-  ) %>%
-  dplyr::group_by(assunto) %>%
-  dplyr::summarise(mediana = median(valor)) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(assunto = dplyr::case_when(
-    mediana < 200000.00 ~ "Outros",
-    TRUE ~ assunto
-  )) %>%
-  dplyr::group_by(assunto) %>%
-  dplyr::summarise(mediana = sum(mediana)) %>%
-  dplyr::arrange(desc(mediana))
+
+# Valor assunto -----------------------------------------------------------
 
 t_valor_assunto <- processos_filtrados %>%
   dplyr::select(id_processo, assunto, valor = valor_da_acao) %>%
@@ -343,6 +304,9 @@ t_valor_assunto <- processos_filtrados %>%
   dplyr::group_by(assunto) %>%
   dplyr::summarise(mediana = sum(mediana)) %>%
   dplyr::arrange(desc(mediana))
+
+
+# Valor vara --------------------------------------------------------------
 
 t_valor_vara <- processos_filtrados %>%
   dplyr::select(id_processo, vara, valor = valor_da_acao) %>%
@@ -358,6 +322,8 @@ t_valor_vara <- processos_filtrados %>%
   dplyr::ungroup() %>%
   dplyr::arrange(desc(mediana))
 
+
+# Valor assunto vara ------------------------------------------------------
 t_valor_assunto_vara <- processos_filtrados %>%
   dplyr::select(id_processo, assunto, vara, valor = valor_da_acao) %>%
   dplyr::filter(!is.na(valor)) %>%
@@ -388,7 +354,6 @@ p_tipo_empresario <- aux_tipo_empresario %>%
     x = "Partes",
     y = "Tipo empresário"
   )
-
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tipo_empresario.png",
   p_tipo_empresario, width = 5, height = 3
@@ -415,8 +380,62 @@ writexl::write_xlsx(
   "data-raw/varas-empresariais-frederico/tabelas_varas_empresariais.xlsx"
 )
 
-# Gráficos ----------------------------------------------------------------
 
+# Tipo empresário com polo ------------------------------------------------
+unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
+
+ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
+passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
+
+p_tipo_empresario_polo <-aux_tipo_empresario %>%
+  dplyr::mutate(polo = dplyr::case_when(
+    parte %in% ativo | papel %in% ativo ~ "ativo",
+    parte %in% passivo | papel %in% passivo ~ "passivo"
+  )) %>%
+  dplyr::filter(!is.na(tipo_empresario), !is.na(polo)) %>%
+  dplyr::mutate(tipo_empresario = forcats::fct_lump_n(tipo_empresario, 5, other_level = "Outros")) %>%
+  dplyr::count(tipo_empresario, polo) %>%
+  dplyr::mutate(pct = scales::percent(n/sum(n))) %>%
+  dplyr::mutate(tipo_empresario = forcats::fct_reorder(tipo_empresario, n)) %>%
+  ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n, fill = polo, label = pct)) +
+  ggplot2::geom_col() +
+  ggplot2::scale_fill_manual(values = cores_abj) +
+  ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::theme_minimal(14) +
+  ggplot2::labs(
+    x = "Partes",
+    y = "Tipo empresário"
+  )
+
+# Tipo empresário com polo e assunto ------------------------------------------------
+unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
+
+ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
+passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
+
+p_tipo_empresario_polo_assunto <- aux_tipo_empresario %>%
+  dplyr::mutate(polo = dplyr::case_when(
+    parte %in% ativo | papel %in% ativo ~ "ativo",
+    parte %in% passivo | papel %in% passivo ~ "passivo"
+  )) %>%
+  dplyr::filter(!is.na(tipo_empresario), !is.na(polo), !is.na(assunto)) %>%
+  dplyr::mutate(tipo_empresario = forcats::fct_lump_n(tipo_empresario, 5, other_level = "Outros")) %>%
+  dplyr::mutate(assunto = forcats::fct_lump_n(assunto, 9, other_level = "Outros")) %>%
+  dplyr::count(tipo_empresario, assunto, polo) %>%
+  dplyr::mutate(pct = scales::percent(n/sum(n))) %>%
+  dplyr::mutate(tipo_empresario = forcats::fct_reorder(tipo_empresario, n)) %>%
+  ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n, fill = polo, label = pct)) +
+  ggplot2::geom_col() +
+  ggplot2::scale_fill_manual(values = cores_abj) +
+  ggplot2::facet_wrap(.~assunto) +
+  #ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::theme_minimal(14) +
+  ggplot2::labs(
+    x = "Partes",
+    y = "Tipo empresário"
+  )
+
+# Gráficos ----------------------------------------------------------------
 
 # Ano/mês
 aux_contagem <- processos_filtrados %>%
