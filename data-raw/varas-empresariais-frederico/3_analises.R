@@ -387,7 +387,7 @@ unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
 ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
 passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
 
-p_tipo_empresario_polo <-aux_tipo_empresario %>%
+p_tipo_empresario_polo <- aux_tipo_empresario %>%
   dplyr::mutate(polo = dplyr::case_when(
     parte %in% ativo | papel %in% ativo ~ "ativo",
     parte %in% passivo | papel %in% passivo ~ "passivo"
@@ -395,9 +395,14 @@ p_tipo_empresario_polo <-aux_tipo_empresario %>%
   dplyr::filter(!is.na(tipo_empresario), !is.na(polo)) %>%
   dplyr::mutate(tipo_empresario = forcats::fct_lump_n(tipo_empresario, 5, other_level = "Outros")) %>%
   dplyr::count(tipo_empresario, polo) %>%
+  dplyr::group_by(tipo_empresario) %>%
+  dplyr::summarise(polo = polo,
+                   n = n,
+                   n_rel = n/sum(n)) %>%
   dplyr::mutate(pct = scales::percent(n/sum(n))) %>%
+  dplyr::ungroup() %>%
   dplyr::mutate(tipo_empresario = forcats::fct_reorder(tipo_empresario, n)) %>%
-  ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n, fill = polo, label = pct)) +
+  ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n_rel, fill = polo, label = n)) +
   ggplot2::geom_col() +
   ggplot2::scale_fill_manual(values = cores_abj) +
   ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
@@ -413,7 +418,9 @@ unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
 ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
 passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
 
-p_tipo_empresario_polo_assunto <- aux_tipo_empresario %>%
+p_tipo_empresario_polo_assunto
+
+aux_tipo_empresario %>%
   dplyr::mutate(polo = dplyr::case_when(
     parte %in% ativo | papel %in% ativo ~ "ativo",
     parte %in% passivo | papel %in% passivo ~ "passivo"
@@ -422,13 +429,19 @@ p_tipo_empresario_polo_assunto <- aux_tipo_empresario %>%
   dplyr::mutate(tipo_empresario = forcats::fct_lump_n(tipo_empresario, 5, other_level = "Outros")) %>%
   dplyr::mutate(assunto = forcats::fct_lump_n(assunto, 9, other_level = "Outros")) %>%
   dplyr::count(tipo_empresario, assunto, polo) %>%
+  dplyr::group_by(tipo_empresario, assunto) %>%
+  dplyr::summarise(polo = polo,
+                   assunto = assunto,
+                   n = n,
+                   n_rel = n/sum(n)) %>%
+  dplyr::ungroup() %>%
   dplyr::mutate(pct = scales::percent(n/sum(n))) %>%
   dplyr::mutate(tipo_empresario = forcats::fct_reorder(tipo_empresario, n)) %>%
-  ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n, fill = polo, label = pct)) +
+  ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n_rel, fill = polo, label = n)) +
   ggplot2::geom_col() +
   ggplot2::scale_fill_manual(values = cores_abj) +
   ggplot2::facet_wrap(.~assunto) +
-  #ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
+  ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
   ggplot2::theme_minimal(14) +
   ggplot2::labs(
     x = "Partes",
