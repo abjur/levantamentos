@@ -206,7 +206,6 @@ ggplot2::ggsave(
   p_assunto, width = 7, height = 6
 )
 
-
 # Assunto ano -------------------------------------------------------------
 
 t_assunto_ano <- processos_filtrados %>%
@@ -418,9 +417,7 @@ unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
 ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
 passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
 
-p_tipo_empresario_polo_assunto
-
-aux_tipo_empresario %>%
+p_tipo_empresario_polo_assunto <- aux_tipo_empresario %>%
   dplyr::mutate(polo = dplyr::case_when(
     parte %in% ativo | papel %in% ativo ~ "ativo",
     parte %in% passivo | papel %in% passivo ~ "passivo"
@@ -447,6 +444,129 @@ aux_tipo_empresario %>%
     x = "Partes",
     y = "Tipo empresário"
   )
+
+
+# Tempo -------------------------------------------------------------------
+extincao <- processos_filtrados |>
+  dplyr::select(-data) |>
+  tidyr::unnest(movimentacoes) |>
+  dplyr::mutate(data = as.Date(data),
+                data = lubridate::dmy(data)) |>
+  dplyr::group_by(id_processo) |>
+  dplyr::filter(stringr::str_detect(movimento, "Arquivad")) |>
+  dplyr::arrange(desc(data)) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::select(id_processo, data_extincao = data)
+
+
+distribuicao <- processos_filtrados |>
+  dplyr::select(-data) |>
+  tidyr::unnest(movimentacoes) |>
+  dplyr::mutate(data = as.Date(data),
+                data = lubridate::dmy(data)) |>
+  dplyr::group_by(id_processo) |>
+  dplyr::arrange(data) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  #dplyr::filter(stringr::str_detect(movimento, pattern = "Distribu")) |>
+  dplyr::select(id_processo, data_distribuicao = data)
+
+da_tempo <- processos_filtrados |>
+  dplyr::left_join(extincao) |>
+  dplyr::left_join(distribuicao) |>
+  dplyr::mutate(duracao = data_extincao - data_distribuicao,
+                duracao = as.integer(duracao)) |>
+  dplyr::select(id_processo, assunto, vara, duracao, data_extincao, data_distribuicao)
+
+da_tempo |>
+  dplyr::filter(!is.na(duracao)) |>
+  ggplot2::ggplot(ggplot2::aes(x = duracao)) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = mean(duracao)),col='red',size=.7, linetype = 2)
+
+# Tempo assunto -------------------------------------------------------------------
+
+assuntos <- da_tempo |>
+  dplyr::filter(!is.na(duracao)) |>
+  dplyr::group_by(assunto) |>
+  dplyr::summarise(duracao_media = mean(duracao)) |>
+  dplyr::ungroup() |>
+  dplyr::arrange(desc(duracao_media)) |>
+  utils::head(19) |>
+  dplyr::select(assunto)
+
+t_tempo_assunto_sem_outros <- da_tempo |>
+  dplyr::filter(!is.na(duracao)) |>
+  dplyr::group_by(assunto) |>
+  dplyr::summarise(duracao_media = mean(duracao),
+                   n_obs = dplyr::n()) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(assunto = forcats::fct_reorder(assunto, duracao_media))
+
+t_tempo_assunto_com_outros <- da_tempo |>
+  dplyr::filter(!is.na(duracao)) |>
+  dplyr::mutate(assunto = dplyr::case_when(
+    !(assunto %in% assuntos$assunto) ~ "Outros",
+    TRUE ~ assunto
+  )) |>
+  dplyr::group_by(assunto) |>
+  dplyr::summarise(duracao_media = mean(duracao),
+                   n_obs = dplyr::n()) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(assunto = forcats::fct_reorder(assunto, duracao_media))
+
+media_tempo <- mean(da_tempo$duracao, na.rm = TRUE)
+
+p_tempo_assunto <- t_tempo_assunto_com_outros |>
+  ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto, label = n_obs)) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label(size = 3, fill = cores_abj[2]) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = media_tempo), col='red',size=.7, linetype = 2)
+
+# Tempo assunto vara -------------------------------------------------------------------
+t_tempo_assunto_vara_sem_outros <- da_tempo |>
+  dplyr::filter(!is.na(duracao)) |>
+  dplyr::group_by(assunto, vara) |>
+  dplyr::summarise(duracao_media = mean(duracao),
+                   n_obs = dplyr::n()) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(assunto = forcats::fct_reorder(assunto, duracao_media))
+
+t_tempo_assunto_vara_com_outros <- da_tempo |>
+  dplyr::filter(!is.na(duracao)) |>
+  dplyr::mutate(assunto = dplyr::case_when(
+    !(assunto %in% assuntos$assunto) ~ "Outros",
+    TRUE ~ assunto
+  )) |>
+  dplyr::group_by(assunto, vara) |>
+  dplyr::summarise(duracao_media = mean(duracao),
+                   n_obs = dplyr::n()) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(assunto = forcats::fct_reorder(assunto, duracao_media),
+                vara = dplyr::case_when(
+                  vara == "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM" ~ "2a vara",
+                  vara == "1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM" ~ "1a vara"
+                ))
+
+vara1 <- da_tempo |>
+  dplyr::filter(vara == "1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", !is.na(duracao)) |>
+  dplyr::summarise(media = mean(duracao))
+
+vara2 <- da_tempo |>
+  dplyr::filter(vara == "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", !is.na(duracao)) |>
+  dplyr::summarise(media = mean(duracao))
+
+#p_tempo_assunto_vara <-
+t_tempo_assunto_vara_com_outros |>
+  ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto, label = n_obs)) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label(size = 3, fill = cores_abj[2]) +
+  ggplot2::geom_label(ggplot2::aes(label = duracao_media), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
+  # os valores de duração médios tão com muitas casas decimais. Tem que resolver isso
+  ggplot2::facet_wrap(.~vara) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = vara1$media), col='red',size=.7, linetype = 2)
+  # a linha média ta ruim, porque não é a linha média de cada vara... Por enquanto ela está meramente ilustrativa
 
 # Gráficos ----------------------------------------------------------------
 
