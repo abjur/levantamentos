@@ -459,7 +459,6 @@ extincao <- processos_filtrados |>
   dplyr::ungroup() |>
   dplyr::select(id_processo, data_extincao = data)
 
-
 distribuicao <- processos_filtrados |>
   dplyr::select(-data) |>
   tidyr::unnest(movimentacoes) |>
@@ -479,7 +478,7 @@ da_tempo <- processos_filtrados |>
                 duracao = as.integer(duracao)) |>
   dplyr::select(id_processo, assunto, vara, duracao, data_extincao, data_distribuicao)
 
-da_tempo |>
+p_tempo <- da_tempo |>
   dplyr::filter(!is.na(duracao)) |>
   ggplot2::ggplot(ggplot2::aes(x = duracao)) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
@@ -514,7 +513,9 @@ t_tempo_assunto_com_outros <- da_tempo |>
   dplyr::summarise(duracao_media = mean(duracao),
                    n_obs = dplyr::n()) |>
   dplyr::ungroup() |>
-  dplyr::mutate(assunto = forcats::fct_reorder(assunto, duracao_media))
+  dplyr::mutate(assunto = stringr::str_to_lower(assunto),
+                assunto = stringr::str_replace(assunto, "\\/", "\\/ \\\n"),
+                assunto = forcats::fct_reorder(assunto, duracao_media))
 
 media_tempo <- mean(da_tempo$duracao, na.rm = TRUE)
 
@@ -539,15 +540,18 @@ t_tempo_assunto_vara_com_outros <- da_tempo |>
     !(assunto %in% assuntos$assunto) ~ "Outros",
     TRUE ~ assunto
   )) |>
+  dplyr::group_by(vara) |>
+  dplyr::mutate(duracao_media_vara = mean(duracao)) |>
+  dplyr::ungroup() |>
   dplyr::group_by(assunto, vara) |>
   dplyr::summarise(duracao_media = mean(duracao),
-                   n_obs = dplyr::n()) |>
+                   n_obs = dplyr::n(),
+                   duracao_media_vara = dplyr::first(duracao_media_vara)) |>
   dplyr::ungroup() |>
-  dplyr::mutate(assunto = forcats::fct_reorder(assunto, duracao_media),
-                vara = dplyr::case_when(
-                  vara == "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM" ~ "2a vara",
-                  vara == "1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM" ~ "1a vara"
-                ))
+  dplyr::mutate(assunto = stringr::str_to_lower(assunto),
+                assunto = stringr::str_replace(assunto, "\\/", "\\/ \\\n"),
+                assunto = forcats::fct_reorder(assunto, duracao_media),
+                duracao_media = round(duracao_media, digits=2))
 
 vara1 <- da_tempo |>
   dplyr::filter(vara == "1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", !is.na(duracao)) |>
@@ -557,16 +561,15 @@ vara2 <- da_tempo |>
   dplyr::filter(vara == "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", !is.na(duracao)) |>
   dplyr::summarise(media = mean(duracao))
 
-#p_tempo_assunto_vara <-
-t_tempo_assunto_vara_com_outros |>
+vara_labs <- c("1ª vara empresarial e \n conflitos de arbitragem", "2ª vara empresarial e \n conflitos de arbitragem")
+names(vara_labs) <- c("1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM")
+
+p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
   ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto, label = n_obs)) +
   ggplot2::geom_col(fill = cores_abj[1]) +
   ggplot2::geom_label(size = 3, fill = cores_abj[2]) +
   ggplot2::geom_label(ggplot2::aes(label = duracao_media), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
-  # os valores de duração médios tão com muitas casas decimais. Tem que resolver isso
-  ggplot2::facet_wrap(.~vara) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = vara1$media), col='red',size=.7, linetype = 2)
-  # a linha média ta ruim, porque não é a linha média de cada vara... Por enquanto ela está meramente ilustrativa
+  ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::labeller(vara = vara_labs)) +   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2)
 
 # Gráficos ----------------------------------------------------------------
 
