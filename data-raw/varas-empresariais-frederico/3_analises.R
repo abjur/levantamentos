@@ -280,7 +280,12 @@ p_valor <- t_valor %>%
   ggplot2::geom_histogram(bins = 50, fill = cores_abj[1]) +
   ggplot2::scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=median(valor)+ 4*1e4, label=paste0("mediana\n", median(valor)), y=500), colour="red")
+  ggplot2::geom_text(ggplot2::aes(x=median(valor)+ 4*1e4, label=paste0("mediana\n", median(valor)), y=500), colour="red") +
+  ggplot2::theme_minimal(14)
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_valor_da_acao.png",
+  p_valor, width = 12, height = 6
+)
 
 # Valor assunto -----------------------------------------------------------
 
@@ -410,6 +415,10 @@ p_tipo_empresario_polo <- aux_tipo_empresario %>%
     x = "Partes",
     y = "Tipo empresário"
   )
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_tipo_empresario_polo.png",
+  p_tipo_empresario_polo, width = 5, height = 3
+)
 
 # Tipo empresário com polo e assunto ------------------------------------------------
 unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
@@ -444,13 +453,16 @@ p_tipo_empresario_polo_assunto <- aux_tipo_empresario %>%
     x = "Partes",
     y = "Tipo empresário"
   )
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_tipo_empresario_polo_assunto.png",
+  p_tipo_empresario_polo_assunto, width = 15, height = 10
+)
 
 # Tempo -------------------------------------------------------------------
 extincao <- processos_filtrados |>
   dplyr::select(-data) |>
   tidyr::unnest(movimentacoes) |>
-  dplyr::mutate(data = as.Date(data),
-                data = lubridate::dmy(data)) |>
+  dplyr::mutate(data = lubridate::dmy(data)) |>
   dplyr::group_by(id_processo) |>
   dplyr::filter(stringr::str_detect(movimento, "Arquivad")) |>
   dplyr::arrange(desc(data)) |>
@@ -461,8 +473,7 @@ extincao <- processos_filtrados |>
 distribuicao <- processos_filtrados |>
   dplyr::select(-data) |>
   tidyr::unnest(movimentacoes) |>
-  dplyr::mutate(data = as.Date(data),
-                data = lubridate::dmy(data)) |>
+  dplyr::mutate(data = lubridate::dmy(data)) |>
   dplyr::group_by(id_processo) |>
   dplyr::arrange(data) |>
   dplyr::slice(1) |>
@@ -481,8 +492,14 @@ p_tempo <- da_tempo |>
   ggplot2::ggplot(ggplot2::aes(x = duracao)) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = mean(duracao)),col='red',size=.7, linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=median(duracao)+17, label=paste0("mediana:\n", median(duracao), " dias"), y=35), colour="red")
+  ggplot2::geom_text(ggplot2::aes(x=median(duracao)+17, label=paste0("mediana:\n", median(duracao), " dias"), y=35), colour="red") +
+  ggplot2::labs(x = "Duração até extinção") +
+  ggplot2::theme_minimal(14)
 
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_tempo.png",
+  p_tempo, width = 7, height = 5
+)
 
 # Tempo assunto -------------------------------------------------------------------
 
@@ -525,6 +542,10 @@ p_tempo_assunto <- t_tempo_assunto_com_outros |>
   ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = media_tempo), col='red',size=.7, linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=media_tempo+15, label=paste0("média:\n", round(media_tempo), " dias"), y = assunto[assunto == 'sustação de protesto']),lineheight = .8,size =3.5, colour="red")
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_tempo_assunto.png",
+  p_tempo_assunto, width = 7, height = 5
+)
 
 # Tempo assunto vara* -------------------------------------------------------------------
 t_tempo_assunto_vara_sem_outros <- da_tempo |>
@@ -563,6 +584,11 @@ p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
   ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::label_wrap_gen()) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red")
+
+ggplot2::ggsave(
+  "data-raw/varas-empresariais-frederico/plot_tempo_assunto_vara.png",
+  p_tempo_assunto_vara, width = , height = 7
+)
 
 # Gráficos ----------------------------------------------------------------
 
