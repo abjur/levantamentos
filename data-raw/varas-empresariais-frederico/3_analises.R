@@ -279,8 +279,8 @@ p_valor <- t_valor %>%
   ggplot2::ggplot(ggplot2::aes(x = valor)) +
   ggplot2::geom_histogram(bins = 50, fill = cores_abj[1]) +
   ggplot2::scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2)
-
+  ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(x=median(valor)+ 4*1e4, label=paste0("mediana\n", median(valor)), y=500), colour="red")
 
 # Valor assunto -----------------------------------------------------------
 
@@ -437,14 +437,13 @@ p_tipo_empresario_polo_assunto <- aux_tipo_empresario %>%
   ggplot2::ggplot(ggplot2::aes(y = tipo_empresario, x = n_rel, fill = polo, label = n)) +
   ggplot2::geom_col() +
   ggplot2::scale_fill_manual(values = cores_abj) +
-  ggplot2::facet_wrap(.~assunto) +
+  ggplot2::facet_wrap(.~assunto, labeller = ggplot2::label_wrap_gen()) +
   ggplot2::geom_label(size = 3, position = ggplot2::position_stack(vjust = .5)) +
   ggplot2::theme_minimal(14) +
   ggplot2::labs(
     x = "Partes",
     y = "Tipo empresário"
   )
-
 
 # Tempo -------------------------------------------------------------------
 extincao <- processos_filtrados |>
@@ -468,7 +467,6 @@ distribuicao <- processos_filtrados |>
   dplyr::arrange(data) |>
   dplyr::slice(1) |>
   dplyr::ungroup() |>
-  #dplyr::filter(stringr::str_detect(movimento, pattern = "Distribu")) |>
   dplyr::select(id_processo, data_distribuicao = data)
 
 da_tempo <- processos_filtrados |>
@@ -482,7 +480,9 @@ p_tempo <- da_tempo |>
   dplyr::filter(!is.na(duracao)) |>
   ggplot2::ggplot(ggplot2::aes(x = duracao)) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = mean(duracao)),col='red',size=.7, linetype = 2)
+  ggplot2::geom_vline(ggplot2::aes(xintercept = mean(duracao)),col='red',size=.7, linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(x=median(duracao)+17, label=paste0("mediana:\n", median(duracao), " dias"), y=35), colour="red")
+
 
 # Tempo assunto -------------------------------------------------------------------
 
@@ -520,12 +520,13 @@ t_tempo_assunto_com_outros <- da_tempo |>
 media_tempo <- mean(da_tempo$duracao, na.rm = TRUE)
 
 p_tempo_assunto <- t_tempo_assunto_com_outros |>
-  ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto, label = n_obs)) +
+  ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto)) +
   ggplot2::geom_col(fill = cores_abj[1]) +
-  ggplot2::geom_label(size = 3, fill = cores_abj[2]) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = media_tempo), col='red',size=.7, linetype = 2)
+  ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = media_tempo), col='red',size=.7, linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(x=media_tempo+15, label=paste0("média:\n", round(media_tempo), " dias"), y = assunto[assunto == 'sustação de protesto']),lineheight = .8,size =3.5, colour="red")
 
-# Tempo assunto vara -------------------------------------------------------------------
+# Tempo assunto vara* -------------------------------------------------------------------
 t_tempo_assunto_vara_sem_outros <- da_tempo |>
   dplyr::filter(!is.na(duracao)) |>
   dplyr::group_by(assunto, vara) |>
@@ -547,29 +548,21 @@ t_tempo_assunto_vara_com_outros <- da_tempo |>
   dplyr::summarise(duracao_media = mean(duracao),
                    n_obs = dplyr::n(),
                    duracao_media_vara = dplyr::first(duracao_media_vara)) |>
-  dplyr::ungroup() |>
   dplyr::mutate(assunto = stringr::str_to_lower(assunto),
                 assunto = stringr::str_replace(assunto, "\\/", "\\/ \\\n"),
-                assunto = forcats::fct_reorder(assunto, duracao_media),
-                duracao_media = round(duracao_media, digits=2))
-
-vara1 <- da_tempo |>
-  dplyr::filter(vara == "1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", !is.na(duracao)) |>
-  dplyr::summarise(media = mean(duracao))
-
-vara2 <- da_tempo |>
-  dplyr::filter(vara == "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", !is.na(duracao)) |>
-  dplyr::summarise(media = mean(duracao))
-
-vara_labs <- c("1ª vara empresarial e \n conflitos de arbitragem", "2ª vara empresarial e \n conflitos de arbitragem")
-names(vara_labs) <- c("1ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM", "2ª VARA EMPRESARIAL E CONFLITOS DE ARBITRAGEM")
+                duracao_media = round(duracao_media, digits=2),
+                assunto = forcats::fct_reorder(assunto, duracao_media)) |>
+  dplyr::ungroup()
 
 p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
-  ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto, label = n_obs)) +
+  dplyr::arrange(desc(n_obs), duracao_media) |>
+  dplyr::mutate(assunto = forcats::fct_inorder(assunto)) |>
+  ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto)) +
   ggplot2::geom_col(fill = cores_abj[1]) +
-  ggplot2::geom_label(size = 3, fill = cores_abj[2]) +
-  ggplot2::geom_label(ggplot2::aes(label = duracao_media), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
-  ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::labeller(vara = vara_labs)) +   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2)
+  ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
+  ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::label_wrap_gen()) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red")
 
 # Gráficos ----------------------------------------------------------------
 
