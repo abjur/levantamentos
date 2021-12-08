@@ -166,7 +166,8 @@ aux_tipo_empresario %>%
   )) %>%
   purrr::set_names(
     "Tipo empresário", "Polo ativo", "Polo passivo", "Não identificado"
-  )
+  ) %>%
+  writexl::write_xlsx("data-raw/varas-empresariais-frederico/tipo_empresario_polo.xslsx")
 
 
 # Gráficos e tabelas ------------------------------------------------------
@@ -539,9 +540,21 @@ media_tempo <- mean(da_tempo$duracao, na.rm = TRUE)
 p_tempo_assunto <- t_tempo_assunto_com_outros |>
   ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto)) +
   ggplot2::geom_col(fill = cores_abj[1]) +
-  ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = media_tempo), col='red',size=.7, linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=media_tempo+15, label=paste0("média:\n", round(media_tempo), " dias"), y = assunto[assunto == 'sustação de protesto']),lineheight = .8,size =3.5, colour="red")
+  ggplot2::geom_label(
+    ggplot2::aes(
+      label = paste0(round(duracao_media), " dias (", n_obs, " processos)")
+    ),
+    size = 3, position = ggplot2::position_stack(vjust = .5),
+    fill = cores_abj[2]
+  ) +
+  ggplot2::geom_vline(
+    ggplot2::aes(xintercept = media_tempo), col='red', size=.7, linetype = 2
+  ) +
+  ggplot2::geom_text(
+    ggplot2::aes(x = media_tempo + 15, y = "sustação de protesto"),
+    label = paste0("média:\n", round(media_tempo), " dias"),
+    lineheight = .8, size = 3.5, colour = "red"
+  )
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tempo_assunto.png",
   p_tempo_assunto, width = 7, height = 5
