@@ -551,7 +551,7 @@ p_tempo_assunto <- t_tempo_assunto_com_outros |>
     ggplot2::aes(xintercept = media_tempo), col='red', size=.7, linetype = 2
   ) +
   ggplot2::geom_text(
-    ggplot2::aes(x = media_tempo + 15, y = "sustação de protesto"),
+    ggplot2::aes(x = media_tempo + 25, y = "sustação de protesto"),
     label = paste0("média:\n", round(media_tempo), " dias"),
     lineheight = .8, size = 3.5, colour = "red"
   )
@@ -596,7 +596,8 @@ p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
   ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
   ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::label_wrap_gen()) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red")
+  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red") +
+  ggplot2::theme_minimal(14)
 
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tempo_assunto_vara.png",
@@ -619,7 +620,7 @@ p_mes_ano <- aux_contagem %>%
   ggplot2::facet_wrap(~ ano, scales = "free_x") +
   ggplot2::geom_label(
     ggplot2::aes(x = n),
-    size = 3,
+    size = 2,
     position = ggplot2::position_stack(vjust = .5)
   ) +
   ggplot2::labs(x = "Quantidade", y = "Mês") +
