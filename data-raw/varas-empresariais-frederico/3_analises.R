@@ -116,11 +116,10 @@ aux_decisao <- da_cposg %>%
   ))
 
 # resultados finais
-aux_decisao %>%
+tabela_decisao <- aux_decisao %>%
   dplyr::count(desfecho, sort = TRUE) %>%
   dplyr::mutate(prop = formattable::percent(n/sum(n))) %>%
-  janitor::adorn_totals() %>%
-  knitr::kable()
+  janitor::adorn_totals()
 
 # Coluna nova com o tipo empresário
 rx_tipoempresa <- c(
@@ -153,7 +152,7 @@ unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
 ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
 passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
 
-aux_tipo_empresario %>%
+tabela_tipo_empresario <- aux_tipo_empresario %>%
   dplyr::mutate(polo = dplyr::case_when(
     parte %in% ativo | papel %in% ativo ~ "ativo",
     parte %in% passivo | papel %in% passivo ~ "passivo"
@@ -166,8 +165,7 @@ aux_tipo_empresario %>%
   )) %>%
   purrr::set_names(
     "Tipo empresário", "Polo ativo", "Polo passivo", "Não identificado"
-  ) %>%
-  writexl::write_xlsx("data-raw/varas-empresariais-frederico/tipo_empresario_polo.xslsx")
+  )
 
 
 # Gráficos e tabelas ------------------------------------------------------
@@ -377,13 +375,23 @@ tabela_tempresario <-  aux_tipo_empresario %>%
 
 writexl::write_xlsx(
   list(
+    "assuntos (completo)" = processos_filtrados |> dplyr::count(assunto, sort = TRUE),
+    "assuntos (resumido em 'outros')" = processos_filtrados |>
+      dplyr::mutate(assunto = forcats::fct_lump_n(assunto, 30, other_level = "Outros")) |>
+      dplyr::count(assunto, sort = TRUE),
+    "assuntos por ano" = tabela_assunto_ano,
+    "assuntos por vara" = tabela_assunto_vara,
+    "varas" = tabela_varas,
     "classes primeiro grau" = classe_1grau,
     "classes segundo grau" = classe_2grau,
+    "desfecho" = tabela_decisao,
     "tipo empresario" = tabela_tempresario,
-    "varas" = tabela_varas
+    "tipo empresario polo" = tabela_tipo_empresario
   ),
   "data-raw/varas-empresariais-frederico/tabelas_varas_empresariais.xlsx"
 )
+
+
 
 
 # Tipo empresário com polo ------------------------------------------------
@@ -551,13 +559,13 @@ p_tempo_assunto <- t_tempo_assunto_com_outros |>
     ggplot2::aes(xintercept = media_tempo), col='red', size=.7, linetype = 2
   ) +
   ggplot2::geom_text(
-    ggplot2::aes(x = media_tempo + 25, y = "sustação de protesto"),
+    ggplot2::aes(x = media_tempo + 100, y = "sustação de protesto"),
     label = paste0("média:\n", round(media_tempo), " dias"),
     lineheight = .8, size = 3.5, colour = "red"
   )
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tempo_assunto.png",
-  p_tempo_assunto, width = 7, height = 5
+  p_tempo_assunto, width = 7, height = 10
 )
 
 # Tempo assunto vara* -------------------------------------------------------------------
@@ -596,12 +604,12 @@ p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
   ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
   ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::label_wrap_gen()) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red") +
+  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+100, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red") +
   ggplot2::theme_minimal(14)
 
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tempo_assunto_vara.png",
-  p_tempo_assunto_vara, width = , height = 7
+  p_tempo_assunto_vara, width = 10, height = 10
 )
 
 # Gráficos ----------------------------------------------------------------
@@ -628,5 +636,6 @@ p_mes_ano <- aux_contagem %>%
 
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_mes_ano.png",
-  p_mes_ano, width = 7, height = 5
+  p_mes_ano, width = 8, height = 6
 )
+
