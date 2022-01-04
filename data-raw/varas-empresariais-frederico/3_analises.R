@@ -19,27 +19,22 @@ processos <- "data-raw/varas-empresariais-frederico/da_completa.rds" %>%
 processos_filtrados <- processos %>%
   dplyr::filter(distribuicao < "2020-03-01" | ano_dist < 2020)
 
+# filtrar processos que não são principais e de liquidação/cumprimento
+processos_filtrados <- processos_filtrados |>
+  dplyr::filter(
+    !stringr::str_detect(classe, "Cumprimento|Liquida"),
+    is.na(processo_principal)
+  )
+
+# juntar varas
+processos_filtrados <- processos_filtrados |>
+  dplyr::mutate(vara = stringr::str_remove_all(vara, " - Foro Central Cível"))
+
+
 # taxa de recorribilidade e reforma -------------------------------------------
 
-processos <- "data-raw/varas-empresariais-frederico/da_completa.rds" %>%
-  readr::read_rds() %>%
-  dplyr::mutate(
-    id_processo = abjutils::clean_cnj(id_processo),
-    distribuicao = dplyr::coalesce(distribuicao, recebido_em),
-    distribuicao = stringr::str_extract(distribuicao, "[0-9]{2}/[0-9]{2}/[0-9]{4}"),
-    distribuicao = lubridate::dmy(distribuicao),
-    ano_dist = dplyr::case_when(
-      !is.na(distribuicao) ~ lubridate::year(distribuicao),
-      is.na(distribuicao) ~ as.numeric(stringr::str_extract(
-        id_processo, "(?<=[0-9]{9})[0-9]{4}"
-      ))
-    )
-  )
-dplyr::count(processos, ano_dist)
+dplyr::count(processos_filtrados, ano_dist)
 
-# filtrar dados até fev/2020
-processos_filtrados <- processos %>%
-  dplyr::filter(distribuicao < "2020-03-01" | ano_dist < 2020)
 
 da_cposg_raw <- readr::read_rds("data-raw/varas-empresariais-frederico/da_cposg.rds")
 
@@ -56,7 +51,6 @@ da_cposg <- da_cposg_raw %>%
   )
 
 classe_1grau <- processos_filtrados %>%
-  dplyr::filter(!stringr::str_detect(classe, "Cumprimento|Liquida")) %>%
   dplyr::count(classe, sort = TRUE) %>%
   dplyr::rename(classe_1grau = classe) %>%
   dplyr::mutate(pct = n/sum(n)) %>%
@@ -73,7 +67,7 @@ processos_filtrados %>%
   ) %>%
   dplyr::count(segundo_grau)
 
-# tirar ids fora do escopo temporal
+# tirar ids fora do escopo temporal no cposg
 ids_tirar <- da_cposg %>%
   dplyr::anti_join(
     processos_filtrados %>% dplyr::transmute(id_processo = abjutils::clean_cnj(id_processo)),
@@ -277,7 +271,7 @@ t_valor <- processos_filtrados %>%
 p_valor <- t_valor %>%
   ggplot2::ggplot(ggplot2::aes(x = valor)) +
   ggplot2::geom_histogram(bins = 50, fill = cores_abj[1]) +
-  ggplot2::scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  ggplot2::scale_x_log10(labels = scales::label_number(drop0trailing = TRUE)) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=median(valor)+ 4*1e4, label=paste0("mediana\n", median(valor)), y=500), colour="red") +
   ggplot2::theme_minimal(14)
@@ -285,6 +279,7 @@ ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_valor_da_acao.png",
   p_valor, width = 12, height = 6
 )
+
 
 # Valor assunto -----------------------------------------------------------
 
@@ -638,4 +633,8 @@ ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_mes_ano.png",
   p_mes_ano, width = 8, height = 6
 )
+
+
+
+
 
