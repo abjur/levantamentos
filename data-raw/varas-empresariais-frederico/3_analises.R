@@ -497,7 +497,7 @@ p_tempo <- da_tempo |>
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = mean(duracao)),col='red',size=.7, linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=median(duracao)+17, label=paste0("mediana:\n", median(duracao), " dias"), y=35), colour="red") +
-  ggplot2::labs(x = "Duração até extinção") +
+  ggplot2::labs(x = "Duração até arquivamento") +
   ggplot2::theme_minimal(14)
 
 ggplot2::ggsave(
