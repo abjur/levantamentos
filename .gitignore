@@ -8,6 +8,8 @@ data-raw/jurimetria-usp/rds
 data-raw/varas-empresariais-frederico/bases
 data-raw/anatocismo/tjsp
 data-raw/anatocismo/tjce
+data-raw/custodia-fabio/dados
+data-raw/custodia-fabio/bases_finais
 .Rdata
 .httr-oauth
 .DS_Store
