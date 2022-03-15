@@ -63,7 +63,7 @@ candidatos %>%
   dplyr::filter(DS_CARGO == "PREFEITO") %>%
   dplyr::pull(NR_CPF_CANDIDATO) %>%
   purrr::map(poss_download,
-             dir = "/mnt/dados/abj/levantamentos/candidatos_sp_2020/prefeitos/",
+             dir = "/mnt/dados/abj/levantamentos/criminal-candidatos-g1/prefeitos/",
              login = "270.229.718-89",
              senha = "pesquisa")
 
@@ -88,7 +88,7 @@ candidatos %>%
   dplyr::pull(NR_CPF_CANDIDATO) %>%
   purrr::map(
     poss_download,
-    dir = "/mnt/dados/abj/levantamentos/candidatos_sp_2020/vereadores",
+    dir = "/mnt/dados/abj/levantamentos/criminal-candidatos-g1/vereadores",
     login = "270.229.718-89",
     senha = "pesquisa"
   )

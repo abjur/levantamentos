@@ -10,6 +10,9 @@ data-raw/anatocismo/tjsp
 data-raw/anatocismo/tjce
 data-raw/custodia-fabio/dados
 data-raw/custodia-fabio/bases_finais
+data-raw/criminal-candidatos-g1/prefeitos
+data-raw/criminal-candidatos-g1/vice_prefeitos
+data-raw/criminal-candidatos-g1/vereadores
 .Rdata
 .httr-oauth
 .DS_Store

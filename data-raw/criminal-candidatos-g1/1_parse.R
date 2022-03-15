@@ -1,6 +1,6 @@
 library(magrittr)
 
-path <- "/mnt/dados/abj/levantamentos/candidatos_sp_2020/vereadores"
+path <- "/mnt/dados/abj/levantamentos/criminal-candidatos-g1/vereadores"
 
 fs::dir_ls(path, recurse = TRUE, glob = "*.html") %>%
   lex::tjsp_cpopg_parse() %>%
@@ -10,8 +10,8 @@ readr::read_rds(paste0(path, ".rds")) %>%
   dplyr::filter(area == "Criminal") %>%
   readr::write_rds(paste0(path, "_criminal.rds"))
 
-read_rds("/mnt/dados/abj/levantamentos/candidatos_sp_2020/vereadores_criminal.rds") %>%
+read_rds("/mnt/dados/abj/levantamentos/criminal-candidatos-g1/vereadores_criminal.rds") %>%
   mutate(cpf_candidato = str_remove_all(str_extract(arq, regex("/.+/")), "/")) %>%
   select(-c(erro, arq)) %>%
   relocate(cpf_candidato, 1) %>%
-  write_rds("/mnt/dados/abj/levantamentos/candidatos_sp_2020/vereadores_criminal.rds")
+  write_rds("/mnt/dados/abj/levantamentos/criminal-candidatos-g1/vereadores_criminal.rds")
