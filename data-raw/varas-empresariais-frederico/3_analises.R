@@ -575,7 +575,8 @@ t_tempo_assunto_vara_com_outros <- da_tempo |>
                 assunto = forcats::fct_reorder(assunto, duracao_media)) |>
   dplyr::ungroup()
 
-p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
+#p_tempo_assunto_vara <-
+t_tempo_assunto_vara_com_outros |>
   dplyr::arrange(desc(n_obs), duracao_media) |>
   dplyr::mutate(assunto = forcats::fct_inorder(assunto)) |>
   ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto)) +
@@ -583,6 +584,7 @@ p_tempo_assunto_vara <- t_tempo_assunto_vara_com_outros |>
   ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
   ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::label_wrap_gen()) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2) +
+  #tidytext::scale_y_reordered(ggplot2::aes(tidytext::reorder_within(assunto, by = duracao_media, within = vara, sep = vara))) +
   ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red")
 
 ggplot2::ggsave(
