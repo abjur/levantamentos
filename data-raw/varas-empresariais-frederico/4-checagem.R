@@ -44,8 +44,3 @@ processos_filtrados |>
   ) |>
   dplyr::count()
 
-# apelação ----------------------------------------------------------------
-processos_filtrados |>
-  dplyr::filter(status)
-  dplyr::filter(stringr::str_detect(classe, stringr::regex("apela[cç][aã]o", TRUE))) |>
-  dplyr::count()

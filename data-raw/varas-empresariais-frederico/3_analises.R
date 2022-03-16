@@ -19,27 +19,22 @@ processos <- "data-raw/varas-empresariais-frederico/da_completa.rds" %>%
 processos_filtrados <- processos %>%
   dplyr::filter(distribuicao < "2020-03-01" | ano_dist < 2020)
 
+# filtrar processos que não são principais e de liquidação/cumprimento
+processos_filtrados <- processos_filtrados |>
+  dplyr::filter(
+    !stringr::str_detect(classe, "Cumprimento|Liquida"),
+    is.na(processo_principal)
+  )
+
+# juntar varas
+processos_filtrados <- processos_filtrados |>
+  dplyr::mutate(vara = stringr::str_remove_all(vara, " - Foro Central Cível"))
+
+
 # taxa de recorribilidade e reforma -------------------------------------------
 
-processos <- "data-raw/varas-empresariais-frederico/da_completa.rds" %>%
-  readr::read_rds() %>%
-  dplyr::mutate(
-    id_processo = abjutils::clean_cnj(id_processo),
-    distribuicao = dplyr::coalesce(distribuicao, recebido_em),
-    distribuicao = stringr::str_extract(distribuicao, "[0-9]{2}/[0-9]{2}/[0-9]{4}"),
-    distribuicao = lubridate::dmy(distribuicao),
-    ano_dist = dplyr::case_when(
-      !is.na(distribuicao) ~ lubridate::year(distribuicao),
-      is.na(distribuicao) ~ as.numeric(stringr::str_extract(
-        id_processo, "(?<=[0-9]{9})[0-9]{4}"
-      ))
-    )
-  )
-dplyr::count(processos, ano_dist)
+dplyr::count(processos_filtrados, ano_dist)
 
-# filtrar dados até fev/2020
-processos_filtrados <- processos %>%
-  dplyr::filter(distribuicao < "2020-03-01" | ano_dist < 2020)
 
 da_cposg_raw <- readr::read_rds("data-raw/varas-empresariais-frederico/da_cposg.rds")
 
@@ -56,7 +51,6 @@ da_cposg <- da_cposg_raw %>%
   )
 
 classe_1grau <- processos_filtrados %>%
-  dplyr::filter(!stringr::str_detect(classe, "Cumprimento|Liquida")) %>%
   dplyr::count(classe, sort = TRUE) %>%
   dplyr::rename(classe_1grau = classe) %>%
   dplyr::mutate(pct = n/sum(n)) %>%
@@ -73,7 +67,7 @@ processos_filtrados %>%
   ) %>%
   dplyr::count(segundo_grau)
 
-# tirar ids fora do escopo temporal
+# tirar ids fora do escopo temporal no cposg
 ids_tirar <- da_cposg %>%
   dplyr::anti_join(
     processos_filtrados %>% dplyr::transmute(id_processo = abjutils::clean_cnj(id_processo)),
@@ -116,11 +110,10 @@ aux_decisao <- da_cposg %>%
   ))
 
 # resultados finais
-aux_decisao %>%
+tabela_decisao <- aux_decisao %>%
   dplyr::count(desfecho, sort = TRUE) %>%
   dplyr::mutate(prop = formattable::percent(n/sum(n))) %>%
-  janitor::adorn_totals() %>%
-  knitr::kable()
+  janitor::adorn_totals()
 
 # Coluna nova com o tipo empresário
 rx_tipoempresa <- c(
@@ -153,7 +146,7 @@ unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
 ativo <- c("Reqte", "Exeqte", "Credor", "Embargte", "Exeqte")
 passivo <- c("Embargdo", "Exectda", "Exectdo", "Reqda", "Reqdo", "Réu")
 
-aux_tipo_empresario %>%
+tabela_tipo_empresario <- aux_tipo_empresario %>%
   dplyr::mutate(polo = dplyr::case_when(
     parte %in% ativo | papel %in% ativo ~ "ativo",
     parte %in% passivo | papel %in% passivo ~ "passivo"
@@ -278,7 +271,7 @@ t_valor <- processos_filtrados %>%
 p_valor <- t_valor %>%
   ggplot2::ggplot(ggplot2::aes(x = valor)) +
   ggplot2::geom_histogram(bins = 50, fill = cores_abj[1]) +
-  ggplot2::scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  ggplot2::scale_x_log10(labels = scales::label_number(drop0trailing = TRUE)) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = median(valor)),col='red',size=.3, linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=median(valor)+ 4*1e4, label=paste0("mediana\n", median(valor)), y=500), colour="red") +
   ggplot2::theme_minimal(14)
@@ -286,6 +279,7 @@ ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_valor_da_acao.png",
   p_valor, width = 12, height = 6
 )
+
 
 # Valor assunto -----------------------------------------------------------
 
@@ -376,13 +370,23 @@ tabela_tempresario <-  aux_tipo_empresario %>%
 
 writexl::write_xlsx(
   list(
+    "assuntos (completo)" = processos_filtrados |> dplyr::count(assunto, sort = TRUE),
+    "assuntos (resumido em 'outros')" = processos_filtrados |>
+      dplyr::mutate(assunto = forcats::fct_lump_n(assunto, 30, other_level = "Outros")) |>
+      dplyr::count(assunto, sort = TRUE),
+    "assuntos por ano" = tabela_assunto_ano,
+    "assuntos por vara" = tabela_assunto_vara,
+    "varas" = tabela_varas,
     "classes primeiro grau" = classe_1grau,
     "classes segundo grau" = classe_2grau,
+    "desfecho" = tabela_decisao,
     "tipo empresario" = tabela_tempresario,
-    "varas" = tabela_varas
+    "tipo empresario polo" = tabela_tipo_empresario
   ),
   "data-raw/varas-empresariais-frederico/tabelas_varas_empresariais.xlsx"
 )
+
+
 
 
 # Tipo empresário com polo ------------------------------------------------
@@ -493,7 +497,7 @@ p_tempo <- da_tempo |>
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = mean(duracao)),col='red',size=.7, linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=median(duracao)+17, label=paste0("mediana:\n", median(duracao), " dias"), y=35), colour="red") +
-  ggplot2::labs(x = "Duração até extinção") +
+  ggplot2::labs(x = "Duração até arquivamento") +
   ggplot2::theme_minimal(14)
 
 ggplot2::ggsave(
@@ -539,12 +543,24 @@ media_tempo <- mean(da_tempo$duracao, na.rm = TRUE)
 p_tempo_assunto <- t_tempo_assunto_com_outros |>
   ggplot2::ggplot(ggplot2::aes(x = duracao_media, y = assunto)) +
   ggplot2::geom_col(fill = cores_abj[1]) +
-  ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = media_tempo), col='red',size=.7, linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=media_tempo+15, label=paste0("média:\n", round(media_tempo), " dias"), y = assunto[assunto == 'sustação de protesto']),lineheight = .8,size =3.5, colour="red")
+  ggplot2::geom_label(
+    ggplot2::aes(
+      label = paste0(round(duracao_media), " dias (", n_obs, " processos)")
+    ),
+    size = 3, position = ggplot2::position_stack(vjust = .5),
+    fill = cores_abj[2]
+  ) +
+  ggplot2::geom_vline(
+    ggplot2::aes(xintercept = media_tempo), col='red', size=.7, linetype = 2
+  ) +
+  ggplot2::geom_text(
+    ggplot2::aes(x = media_tempo + 100, y = "sustação de protesto"),
+    label = paste0("média:\n", round(media_tempo), " dias"),
+    lineheight = .8, size = 3.5, colour = "red"
+  )
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tempo_assunto.png",
-  p_tempo_assunto, width = 7, height = 5
+  p_tempo_assunto, width = 7, height = 10
 )
 
 # Tempo assunto vara* -------------------------------------------------------------------
@@ -584,12 +600,12 @@ t_tempo_assunto_vara_com_outros |>
   ggplot2::geom_label(ggplot2::aes(label = paste0(round(duracao_media), " dias (", n_obs, " processos)")), size = 3, position = ggplot2::position_stack(vjust = .5), fill = cores_abj[2]) +
   ggplot2::facet_grid(vara~., scales = "free", space = "free", labeller = ggplot2::label_wrap_gen()) +
   ggplot2::geom_vline(ggplot2::aes(xintercept = duracao_media_vara), col='red',size=.7, linetype = 2) +
-  #tidytext::scale_y_reordered(ggplot2::aes(tidytext::reorder_within(assunto, by = duracao_media, within = vara, sep = vara))) +
-  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+10, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red")
+  ggplot2::geom_text(ggplot2::aes(x=duracao_media_vara+100, label=paste0("média:\n", round(duracao_media_vara), " dias"), y = assunto[1]),lineheight = .8,size=3.5, colour="red") +
+  ggplot2::theme_minimal(14)
 
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_tempo_assunto_vara.png",
-  p_tempo_assunto_vara, width = , height = 7
+  p_tempo_assunto_vara, width = 10, height = 10
 )
 
 # Gráficos ----------------------------------------------------------------
@@ -608,7 +624,7 @@ p_mes_ano <- aux_contagem %>%
   ggplot2::facet_wrap(~ ano, scales = "free_x") +
   ggplot2::geom_label(
     ggplot2::aes(x = n),
-    size = 3,
+    size = 2,
     position = ggplot2::position_stack(vjust = .5)
   ) +
   ggplot2::labs(x = "Quantidade", y = "Mês") +
@@ -616,5 +632,10 @@ p_mes_ano <- aux_contagem %>%
 
 ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_mes_ano.png",
-  p_mes_ano, width = 7, height = 5
+  p_mes_ano, width = 8, height = 6
 )
+
+
+
+
+
