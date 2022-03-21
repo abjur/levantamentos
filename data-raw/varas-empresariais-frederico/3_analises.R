@@ -563,7 +563,7 @@ ggplot2::ggsave(
   p_tempo_assunto, width = 7, height = 10
 )
 
-# Tempo assunto vara* -------------------------------------------------------------------
+# Tempo assunto vara -------------------------------------------------------------------
 t_tempo_assunto_vara_sem_outros <- da_tempo |>
   dplyr::filter(!is.na(duracao)) |>
   dplyr::group_by(assunto, vara) |>
@@ -608,14 +608,18 @@ ggplot2::ggsave(
   p_tempo_assunto_vara, width = 10, height = 10
 )
 
-# Gráficos ----------------------------------------------------------------
-
 # Ano/mês
 aux_contagem <- processos_filtrados %>%
+  dplyr::select(id_processo, distribuicao, ano_dist) |>
   dplyr::mutate(mes = lubridate::month(distribuicao, label = TRUE, locale = "pt_BR.UTF-8")) %>%
   dplyr::mutate(ano = ano_dist)
+
+aux_contagem |>
+  dplyr::filter(is.na(mes)) |>
+  dplyr::count()
+
 p_mes_ano <- aux_contagem %>%
-  dplyr::filter(mes != "NA") %>%
+  dplyr::filter(!is.na(mes)) %>%
   dplyr::group_by(ano) %>%
   dplyr::count(mes) %>%
   ggplot2::ggplot() +
@@ -634,8 +638,3 @@ ggplot2::ggsave(
   "data-raw/varas-empresariais-frederico/plot_mes_ano.png",
   p_mes_ano, width = 8, height = 6
 )
-
-
-
-
-

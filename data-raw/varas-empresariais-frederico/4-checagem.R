@@ -22,12 +22,20 @@ processos_filtrados <- processos %>%
 nrow(processos_filtrados)
 # 4239 casos ao todo
 
+
+# criando tabela de classe processual -------------------------------------
+classe <- processos_filtrados |>
+  dplyr::count(classe) |>
+  dplyr::arrange(desc(n))
+
+writexl::write_xlsx(classe, "data-raw/varas-empresariais-frederico/xlsx/classes.xlsx")
+
 # filtrando cumprimento de sentença ---------------------------------------
 # no relatório 334
 processos_filtrados |>
-  dplyr::filter(stringr::str_detect(classe, stringr::regex("cumprimento", TRUE))) |>
+  dplyr::filter(stringr::str_detect(classe, stringr::regex("Cumprimento|Liquida", TRUE))) |>
   dplyr::count()
-# aqui são 321
+# 334 também
 
 # filtrando processos apensados -------------------------------------------
 # no relatório estão 4036 processos principais
@@ -39,8 +47,9 @@ processos_filtrados |>
 # filtrando cumprimento de sentença e apensados ---------------------------
 processos_filtrados |>
   dplyr::filter(
-    !stringr::str_detect(classe, stringr::regex("cumprimento", TRUE)),
+    !stringr::str_detect(classe, stringr::regex("cumprimento|liquida", TRUE)),
     is.na(processo_principal)
   ) |>
   dplyr::count()
+# 3890
 
