@@ -22,7 +22,6 @@ processos_filtrados <- processos %>%
 nrow(processos_filtrados)
 # 4239 casos ao todo
 
-
 # criando tabela de classe processual -------------------------------------
 classe <- processos_filtrados |>
   dplyr::count(classe) |>
@@ -52,4 +51,29 @@ processos_filtrados |>
   ) |>
   dplyr::count()
 # 3890
+
+
+
+
+# taxa de congestionamento ------------------------------------------------
+
+# São desconsiderados os processos suspensos, sobrestados ou em arquivo provisório e as execuções fiscais.
+n_total_processos <- processos_filtrados |>
+  nrow()
+
+n_processos_desconsiderados <- processos_filtrados |>
+  dplyr::filter(stringr::str_detect(status, stringr::regex("extint|cancelad|arquivad|cancelad|suspens", TRUE))) |>
+  nrow()
+
+n_processos_na <- processos_filtrados |>
+  dplyr::filter(is.na(status)) |>
+  nrow()
+
+n_processos_ativos <- processos_filtrados |>
+  dplyr::filter(!stringr::str_detect(status, stringr::regex("extint|cancelad|arquivad|cancelad|suspens", TRUE))) |>
+  nrow()
+
+
+taxa_congestionamento <- round(100*((n_processos_ativos + n_processos_na)/ n_total_processos), 2)
+
 
