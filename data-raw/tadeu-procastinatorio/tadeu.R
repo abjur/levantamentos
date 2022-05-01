@@ -154,7 +154,8 @@ readr::write_rds(
 )
 readr::write_rds(
   results_embargos,
-  "data-raw/tadeu-procastinatorio/da_results_embargos.rds"
+  "data-raw/tadeu-procastinatorio/da_results_embargos.rds",
+  compress = "xz"
 )
 
 writexl::write_xlsx(
