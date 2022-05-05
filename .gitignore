@@ -15,6 +15,9 @@ data-raw/criminal-candidatos-g1/vice_prefeitos
 data-raw/criminal-candidatos-g1/vereadores
 data-raw/banco-pan/cpopg
 data-raw/banco-pan/cposg
+data-raw/banco-conflito-competencia/cjsg_trib_competencia/
+data-raw/banco-conflito-competencia/cjsg_trib_conflito/
+data-raw/banco-conflito-competencia/cjsg_trib_total/
 .Rdata
 .httr-oauth
 .DS_Store
