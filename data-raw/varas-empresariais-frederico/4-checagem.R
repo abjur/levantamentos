@@ -77,3 +77,17 @@ n_processos_ativos <- processos_filtrados |>
 taxa_congestionamento <- round(100*((n_processos_ativos + n_processos_na)/ n_total_processos), 2)
 
 
+
+# pedidos do Igor ---------------------------------------------------------
+
+a<-processos_filtrados |>
+  dplyr::mutate(
+    valor = stringr::str_remove(valor_da_acao, "R\\$ "),
+    valor = stringr::str_remove_all(valor, "\\."),
+    valor = stringr::str_replace(valor, "\\,", "\\."),
+    valor = as.numeric(valor)
+  ) |>
+  dplyr::arrange(desc(valor)) |>
+  head(50)
+
+writexl::write_xlsx(a, "data-raw/varas-empresariais-frederico/maiores_valores.xlsx")
