@@ -18,6 +18,7 @@ data-raw/banco-pan/cposg
 data-raw/conflito-competencia/cjsg_trib_competencia/
 data-raw/conflito-competencia/cjsg_trib_conflito/
 data-raw/conflito-competencia/cjsg_trib_total/
+data-raw/prop-industrial/dados-brutos/
 .Rdata
 .httr-oauth
 .DS_Store
