@@ -35,7 +35,6 @@ processos_filtrados <- processos_filtrados |>
 
 dplyr::count(processos_filtrados, ano_dist)
 
-
 da_cposg_raw <- readr::read_rds("data-raw/varas-empresariais-frederico/da_cposg.rds")
 
 da_cposg <- da_cposg_raw %>%
@@ -385,9 +384,6 @@ writexl::write_xlsx(
   ),
   "data-raw/varas-empresariais-frederico/tabelas_varas_empresariais.xlsx"
 )
-
-
-
 
 # Tipo empresário com polo ------------------------------------------------
 unique(c(aux_tipo_empresario$papel, aux_tipo_empresario$parte))
