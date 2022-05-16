@@ -64,8 +64,11 @@ processos_valores |>
   ggplot2::ggplot(ggplot2::aes(x = valor)) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 40) +
   ggplot2::geom_vline(xintercept = media_valores, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(x=media_valores + 3400000, label=paste0("média\n", format_reais(media_valores)), y=500), colour="red") +
   ggplot2::geom_vline(xintercept = mediana_valores, color = "green", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(x=mediana_valores - 25000, label=paste0("mediana\n", format_reais(mediana_valores)), y=1050), colour="green") +
   ggplot2::labs(
+    title = "Valor da causa (todos os processos)",
     x = "Valor da causa",
     y = "Quantidade de processos"
   ) +
@@ -101,8 +104,9 @@ processos_valores |>
   ggplot2::aes(x = valor_categorias,
                y = n, label = n, fill = top10) +
   ggplot2::geom_col() +
-  ggplot2::geom_label() +
+  ggplot2::geom_label(fill = 'white') +
   ggplot2::labs(
+    title = "Faixa de valores (todos os processos)",
     x = "Faixa de valor dos processos",
     y = "Quantidade de processos"
   ) +
@@ -177,9 +181,10 @@ maiores_processos |>
   ggplot2::geom_vline(xintercept = media_maiores_processos, color = "red", linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(x=media_maiores_processos + 10000000, label=paste0("média\n", format_reais(media_maiores_processos)), y=80), colour="red") +
   ggplot2::geom_vline(xintercept = mediana_maiores_processos, color = "green", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(x=mediana_maiores_processos + 1000000, label=paste0("mediana\n", format_reais(mediana_maiores_processos)), y=80), colour="green") +
+  ggplot2::geom_text(ggplot2::aes(x=mediana_maiores_processos + 700000, label=paste0("mediana\n", format_reais(mediana_maiores_processos)), y=80), colour="green") +
   ggplot2::labs(
-    title = "Valor dos 10% maiores processos",
+    title = "Valor da causa",
+    subtitle = "10% processos mais com valores mais altos",
     x = "Valor da causa",
     y = "Quantidade de processos"
   ) +
@@ -228,6 +233,7 @@ maiores_processos |>
 
 maiores_processos |>
   dplyr::mutate(
+    vara = stringr::str_remove(vara, " - Foro Central Cível"),
     vara = forcats::fct_infreq(vara),
     vara = forcats::fct_rev(vara)
   ) |>
@@ -236,7 +242,7 @@ maiores_processos |>
   ggplot2::aes(y = vara, x = n) +
   ggplot2::geom_col(fill = cores_abj[1]) +
   ggplot2::labs(
-    title = "5 varas mais frequentes, dentre os maiores processos",
+    title = "Varas em que tramitam os processos com valores mais altos",
     x = "Quantidade de processos",
     y = "Vara"
   )
