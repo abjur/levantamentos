@@ -19,6 +19,8 @@ data-raw/conflito-competencia/cjsg_trib_competencia/
 data-raw/conflito-competencia/cjsg_trib_conflito/
 data-raw/conflito-competencia/cjsg_trib_total/
 data-raw/prop-industrial/dados-brutos/
+data-raw/lucro-cessante/bases/
+data-raw/lucro-cessante/xlsx/
 .Rdata
 .httr-oauth
 .DS_Store
