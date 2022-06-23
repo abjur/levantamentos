@@ -1,5 +1,5 @@
 # import
 
-da <- readxl::read_xlsx("/home/abj/Downloads/RESPOSTAS AO FORMS (parte 1).xlsx")
+da <- readr::read_csv("/home/abj/Downloads/RESPOSTAS AO FORMS (parte 1) - Processos.csv")
 
 readr::write_rds(da, "data-raw/bruno-nassar-puc/data-raw/homicidios_bruto.rds")
