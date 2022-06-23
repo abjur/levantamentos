@@ -2,6 +2,21 @@
 da <- readr::read_rds("data-raw/bruno-nassar-puc/data/homicidios_tidy.rds")
 cores_abj <-  viridis::viridis(2, 1, .2, .8)
 
+grafico_base <- function(da, var) {
+  cores_abj <-  viridis::viridis(2, 1, .2, .8)
+
+  da |>
+    dplyr::filter(!is.na({{var}})) |>
+    dplyr::count({{var}}) |>
+    dplyr::mutate(
+      prop = n/sum(n),
+      perc = formattable::percent(prop)
+    ) |>
+    ggplot2::ggplot() +
+    ggplot2::aes(x = {{var}}, y = n, label = perc) +
+    ggplot2::geom_col(fill = cores_abj[1]) +
+    ggplot2::geom_label()
+}
 # 1 – Coluna C: qual a distribuição de processos entre as varas? =========================================================================
 da |>
   dplyr::mutate(
@@ -17,21 +32,13 @@ da |>
     x = "Ano de distribuição",
     y = "Quantidade de processos"
   )
+
 # 2 – Coluna D: qual a distribuição de processos eletrônicos e físicos? =========================================================================
 da |>
-  dplyr::count(digital) |>
-  dplyr::mutate(
-    prop = n/sum(n),
-    perc = formattable::percent(prop)
-  ) |>
-  dplyr::select(-prop) |>
-  knitr::kable(
-    caption = "Distribuição de processos digitais",
-    col.names = c(
-      "Processo é digital?",
-      "Quantidade de processos",
-      "Porcentagem"
-    )
+  grafico_base(digital) +
+  ggplot2::labs(
+    x = "O processo é digital?",
+    y = "Quantidade de processos"
   )
 
 # 3 – Coluna E: qual a temática de cada processo. =========================================================================
@@ -43,23 +50,85 @@ da |>
 da |>
   dplyr::filter(!is.na(parte_do_dia_fato)) |>
   dplyr::count(parte_do_dia_fato) |>
-  dplyr::mutate(parte_do_dia_fato = factor(parte_do_dia_fato, levels = c("Madrugada (00:01 às 06:00)", "Manhã (06:01 às 12:00)", "Tarde (12:01 às 18:00)", "Noite (18:01 às 00:00)", "Não consta"))) |>
+  dplyr::mutate(
+    parte_do_dia_fato = factor(parte_do_dia_fato, levels = c("Madrugada (00:01 às 06:00)", "Manhã (06:01 às 12:00)", "Tarde (12:01 às 18:00)", "Noite (18:01 às 00:00)", "Não consta")),
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = parte_do_dia_fato == "Não consta"
+  ) |>
   ggplot2::ggplot() +
-  ggplot2::aes(x = parte_do_dia_fato, y =n) +
-  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::aes(x = parte_do_dia_fato, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
     x = "Parte do dia",
-    y = "Quantidade de casos"
+    y = "Quantidade de processos"
   )
 
 # 5 – Coluna O: quantos processos foram suspensos com base no art. 366. =========================================================================
+da |>
+  dplyr::filter(!is.na(suspensao)) |>
+  dplyr::count(suspensao) |>
+  dplyr::mutate(
+    suspensao = factor(suspensao, levels = c("Não", "Sim", "Não consta")),
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = suspensao == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = suspensao, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    x = "O processo chegou a ser suspenso com base no art. 366?",
+    y = "Quantidade de processos"
+  )
 
 # 6 – Coluna U: quantos casos tiveram concurso com menor de idade? =========================================================================
 da |>
-  dplyr::count(concurso_menor)
+  dplyr::filter(!is.na(concurso_menor)) |>
+  dplyr::count(concurso_menor) |>
+  dplyr::mutate(
+    prop = n / sum(n),
+    perc = formattable::percent(prop),
+    col_dif = concurso_menor == "Não consta"
+  ) |>
+  dplyr::arrange(desc(n)) |>
+  dplyr::mutate(concurso_menor = forcats::fct_inorder(concurso_menor)) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = concurso_menor, y = n, label = glue::glue("{n} casos\n({perc})")) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    x = "Houve concurso com menor de idade",
+    y = "Quantidade de processos"
+  )
+
 # 7 – Coluna AA: qual a distribuição de número de réus julgados? =========================================================================
+da |>
+  dplyr::filter(!is.na(n_reus_julgados)) |>
+  dplyr::count(n_reus_julgados) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = n_reus_julgados, y = n, label = perc) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label() +
+  ggplot2::scale_x_continuous(breaks = c(1,2)) +
+  ggplot2::labs(
+    x = "Número de réus julgados",
+    y = "Quantidade de processos"
+  )
 
 # 8 – Coluna AB: qual a distribuição no que diz respeito ao sexo dos réus? =========================================================================
+da |>
+  dplyr::filter(!is.na(n_reus_julgados)) |>
+  dplyr::count(n_reus_julgados, sexo_reus_julgados)
 
 # 9 – Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
 
@@ -82,7 +151,21 @@ da |>
 # 18 – Processos que tiveram pronúncia (resposta “sentença de pronúncia” ou “sentença após plenário do júri” na coluna AH): =========================================================================
 # a) Coluna AL: quantos casos tiveram uma dessas decisões convertida em pronúncia? -----------------------------------------------------------------------
 # b) Coluna AO: quantos casos tiveram RESE? -----------------------------------------------------------------------
+da |>
+  grafico_base(pronuncia_rese) +
+  ggplot2::labs(
+    x = "A pronúncia foi alvo de RESE",
+    y = "QUantidade de processos"
+  )
+
 # c) Coluna AP: para os casos que tiveram como resposta “sim” na coluna AO, medir o tempo entre a sentença de pronúncia (coluna M) e a decisão sobre o RESE (coluna AP). Para esses casos, medir também o tempo entre a sentença de pronúncia (coluna M) e o plenário (coluna N. Mas só se já houve plenário, ou seja, casos com resposta “sentença após plenário do júri” na coluna AH”). -----------------------------------------------------------------------
+da |>
+  dplyr::filter(pronuncia_rese == "Sim") |>
+  dplyr::mutate(
+    tempo_sentenca_rese =  dt_acordao_rese - dt_pronuncia
+  ) |>
+  dplyr::select(id_processo, tempo_sentenca_rese) |>
+  dplyr::filter(tempo_sentenca_rese >= 0)
 
 # 19 – Processos que tiveram sentença após plenário (resposta “sentença após plenário do júri” na coluna AH): =========================================================================
 # a) Coluna AH: qual a distribuição no que diz respeito à natureza da defesa? -----------------------------------------------------------------------
