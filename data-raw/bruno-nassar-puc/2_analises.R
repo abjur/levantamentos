@@ -17,8 +17,11 @@ grafico_base <- function(da, var) {
     ggplot2::geom_col(fill = cores_abj[1]) +
     ggplot2::geom_label()
 }
+
+fs::dir_create("data-raw/bruno-nassar-puc/img")
+
 # 1 – Coluna C: qual a distribuição de processos entre as varas? =========================================================================
-da |>
+p01 <- da |>
   dplyr::mutate(
     ano_dist = lubridate::year(dt_dist)
   ) |>
@@ -29,25 +32,45 @@ da |>
   ggplot2::geom_label() +
   ggplot2::scale_x_continuous(breaks = c(1993, 2005, 2008:2019)) +
   ggplot2::labs(
+    title = "Distribuição dos processos ao longo dos anos",
     x = "Ano de distribuição",
     y = "Quantidade de processos"
-  )
+  ) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust=1))
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p01.png",
+  p01, width = 10, height = 4
+)
 # 2 – Coluna D: qual a distribuição de processos eletrônicos e físicos? =========================================================================
-da |>
+p02 <- da |>
   grafico_base(digital) +
   ggplot2::labs(
+    title = "Distribuição de processos eletrônicos e físicos",
     x = "O processo é digital?",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p02.png",
+  p02, width = 7, height = 5
+)
 # 3 – Coluna E: qual a temática de cada processo. =========================================================================
-da |>
-  dplyr::glimpse()
-# Como fazer isso?
+p03 <- da |>
+  dplyr::mutate(homicidio = forcats::fct_infreq(homicidio)) |>
+  grafico_base(homicidio) +
+  ggplot2::labs(
+    title = "Processos relacionados a homicídios",
+    x = "Trata-se de processo de homicídio?",
+    y = "Quantidade de processos"
+  )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p03.png",
+  p03, width = 7, height = 5
+)
 # 4 – Coluna H: qual a distribuição de horários do fato? =========================================================================
-da |>
+p04 <- da |>
   dplyr::filter(!is.na(parte_do_dia_fato)) |>
   dplyr::count(parte_do_dia_fato) |>
   dplyr::mutate(
@@ -62,12 +85,18 @@ da |>
   ggplot2::geom_label() +
   ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
-    x = "Parte do dia",
+    title = "Período do dia em que aconteceu o fato",
+    x = "Período do dia",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p04.png",
+  p04, width = 10, height = 5
+)
+
 # 5 – Coluna O: quantos processos foram suspensos com base no art. 366. =========================================================================
-da |>
+p05 <- da |>
   dplyr::filter(!is.na(suspensao)) |>
   dplyr::count(suspensao) |>
   dplyr::mutate(
@@ -82,12 +111,18 @@ da |>
   ggplot2::geom_label() +
   ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
+    title = "Suspensões com base no art. 366",
     x = "O processo chegou a ser suspenso com base no art. 366?",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p05.png",
+  p05, width = 7, height = 5
+)
+
 # 6 – Coluna U: quantos casos tiveram concurso com menor de idade? =========================================================================
-da |>
+p06 <- da |>
   dplyr::filter(!is.na(concurso_menor)) |>
   dplyr::count(concurso_menor) |>
   dplyr::mutate(
@@ -103,12 +138,18 @@ da |>
   ggplot2::geom_label() +
   ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
+    title = "Homicídios com concurso de agentes com menor de idade",
     x = "Houve concurso com menor de idade",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p06.png",
+  p06, width = 7, height = 6
+)
+
 # 7 – Coluna AA: qual a distribuição de número de réus julgados? =========================================================================
-da |>
+p07 <- da |>
   dplyr::filter(!is.na(n_reus_julgados)) |>
   dplyr::count(n_reus_julgados) |>
   dplyr::mutate(
@@ -121,28 +162,261 @@ da |>
   ggplot2::geom_label() +
   ggplot2::scale_x_continuous(breaks = c(1,2)) +
   ggplot2::labs(
+    title = "Distribuição da quantidade de réus julgados por processo",
     x = "Número de réus julgados",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p07.png",
+  p07, width = 6, height = 5
+)
+
 # 8 – Coluna AB: qual a distribuição no que diz respeito ao sexo dos réus? =========================================================================
-da |>
-  dplyr::filter(!is.na(n_reus_julgados)) |>
-  dplyr::count(n_reus_julgados, sexo_reus_julgados)
+p08 <- da |>
+  dplyr::filter(!is.na(sexo_reus_julgados)) |>
+  dplyr::mutate(
+    n_reus_julgados = ifelse(n_reus_julgados == 1, "Um réu", "Dois réus"),
+    n_reus_julgados = factor(n_reus_julgados, levels = c("Um réu", "Dois réus")),
+    sexo_reus_julgados = forcats::fct_infreq(sexo_reus_julgados)
+  ) |>
+  dplyr::count(n_reus_julgados, sexo_reus_julgados) |>
+  dplyr::group_by(n_reus_julgados) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = sexo_reus_julgados, y = prop, label = glue::glue("{n} casos\n({perc})")) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label() +
+  ggplot2::facet_wrap(~n_reus_julgados, scale = "free") +
+  ggplot2::scale_y_continuous(limits=c(0,1), breaks=c(0,.2,.4,.6,.8,1)) +
+  ggplot2::labs(
+    title = "Distribuição do sexo dos réus julgados",
+    x = "Sexo dos réus julgados",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p08.png",
+  p08, width = 7, height = 4
+)
 
 # 9 – Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
+da9 <- da |>
+  dplyr::filter(!is.na(cor_reus_julgados)) |>
+  dplyr::mutate(
+    n_reus_julgados = ifelse(n_reus_julgados == 1, "Um réu", "Dois réus"),
+    n_reus_julgados = factor(n_reus_julgados, levels = c("Um réu", "Dois réus")),
+    cor_reus_julgados = stringr::str_replace_all(cor_reus_julgados, ",", ",\n"),
+    ordered = glue::glue("{n_reus_julgados} - {cor_reus_julgados}")
+  ) |>
+  dplyr::count(n_reus_julgados, cor_reus_julgados, ordered) |>
+  dplyr::arrange(desc(n)) |>
+  dplyr::mutate(
+    ordered = forcats::fct_inorder(ordered),
+    col_dif = cor_reus_julgados == "Não consta"
+  ) |>
+  dplyr::group_by(n_reus_julgados) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  dplyr::ungroup()
+
+p09 <- da9 |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = ordered, y = prop, label = glue::glue("{n} casos\n({perc})")) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::facet_wrap(~n_reus_julgados, scale = "free_x") +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::scale_x_discrete(
+    labels = setNames(da9$cor_reus_julgados, da9$ordered)
+  ) +
+  ggplot2::labs(
+    title = "Distribuição da cor dos réus julgados",
+    x = "Cor dos réus julgados",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p09.png",
+  p09, width = 10, height = 6
+)
 
 # 10 – Coluna AD: qual a distribuição no que diz respeito a se o réu é policial? =========================================================================
+p10 <- da |>
+  dplyr::filter(!is.na(reu_policial)) |>
+  dplyr::mutate(
+    reu_policial_generico = dplyr::case_when(
+      stringr::str_detect(reu_policial, "Sim") ~ "Sim",
+      TRUE ~ reu_policial
+    )
+  ) |>
+  dplyr::count(reu_policial_generico) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = reu_policial_generico == "Não consta",
+    reu_policial_generico = factor(reu_policial_generico, levels = c("Não", "Sim", "Não consta"))
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = reu_policial_generico, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    x = "O réu é policial?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p10.png",
+  p10, width = 7, height = 5
+)
+
+# da |>
+#   dplyr::mutate(
+#     reu_policial_generico = dplyr::case_when(
+#       stringr::str_detect(reu_policial, "Sim") ~ "Sim",
+#       TRUE ~ reu_policial
+#     )
+#   ) |>
+#   dplyr::filter(reu_policial_generico == "Sim") |>
+#   dplyr::count(reu_policial) |>
+#   dplyr::mutate(
+#     prop = n/sum(n),
+#     perc = formattable::percent(prop),
+#     group = 1
+#   ) |>
+#   ggplot2::ggplot() +
+#   ggplot2::aes(x = group, y = prop,
+#                label = perc,
+#                group = reu_policial) +
+#   ggplot2::geom_col(
+#     ggplot2::aes(fill = reu_policial),
+#     width = .4) +
+#   ggplot2::geom_label(
+#     fill = "white",
+#     position=ggplot2::position_fill(vjust = 0.5)
+#   ) +
+#   ggplot2::scale_fill_manual("Tipos de policiais", values = cores_abj[2:1]) +
+#   ggplot2::theme(
+#     axis.title.x = ggplot2::element_blank(),
+#     axis.text.x = ggplot2::element_blank(),
+#     axis.ticks.x = ggplot2::element_blank()
+#   ) +
+#   ggplot2::labs(
+#     title = glue::glue("Tipo de policial, quando algum réu é policial"),
+#     y = "Proporção de casos"
+#   )
 
 # 11 – Coluna AE: qual a distribuição no que diz respeito à quantidade de vítimas? =========================================================================
+p11 <- da |>
+  dplyr::filter(!is.na(n_vitimas)) |>
+  dplyr::count(n_vitimas) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = n_vitimas == "Não consta",
+    n_vitimas = factor(n_vitimas, levels = c("1", "2", "3", "4 ou mais", "Não consta"))
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = n_vitimas, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    x = "Número de vítimas",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p11.png",
+  p11, width = 8, height = 6
+)
 
 # 12 – Coluna AF: qual a distribuição no que diz respeito ao sexo das vítimas? =========================================================================
+p12 <- da |>
+  dplyr::filter(!is.na(sexo_vitimas)) |>
+  dplyr::count(n_vitimas, sexo_vitimas) |>
+  dplyr::arrange(desc(n)) |>
+  dplyr::group_by(n_vitimas) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    n_vitimas = dplyr::case_when(
+      n_vitimas == "1" ~ glue::glue("{n_vitimas} vítima"),
+      n_vitimas != "Não consta" ~ glue::glue("{n_vitimas} vítimas"),
+      n_vitimas == "Não consta"~ "Não consta"
+    ),
+    col_dif = sexo_vitimas == "Não consta",
+    sexo_vitimas = forcats::fct_inorder(sexo_vitimas),
+    sexo_vitimas = forcats::fct_relevel(sexo_vitimas, after = Inf, "Não consta")
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = sexo_vitimas, y = n, label = n) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::facet_wrap(~n_vitimas, scales = "free") +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    x = "Sexo das vítimas",
+    y = "Quantidade de processos"
+  )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p12.png",
+  p12, width = 10, height = 6
+)
 # 13 – Coluna AG - qual a distribuição no que diz respeito à delegacia que desenvolveu o IP? =========================================================================
+p13 <- da |>
+  dplyr::mutate(agente_ip = forcats::fct_infreq(agente_ip)) |>
+  grafico_base(agente_ip) +
+  ggplot2::labs(
+    x = "Delegacia que desenvolveu o Inquérito Policial",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p13.png",
+  p13, width = 7, height = 6
+)
 
 # 14 – Coluna AH: qual a distribuição no que diz respeito à natureza da decisão? =========================================================================
+p14 <- da |>
+  dplyr::mutate(
+    # natureza_decisao = stringr::str_remove_all(natureza_decisao, "\""),
+    natureza_decisao = forcats::fct_infreq(natureza_decisao)
+  ) |>
+  grafico_base(natureza_decisao) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
+  ggplot2::labs(
+    x = "Natureza da decisão",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p14.png",
+  p14, width = 10, height = 4
+)
 
 # 15 – Coluna AI: qual a distribuição no que diz respeito a se o processo foi adiado pela pandemia? =========================================================================
+p15 <- da |>
+  grafico_base(pandemia_juri) +
+  ggplot2::labs(
+    x = "Ainda não foi designado o plenário do júri em razão da pandemia?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p15.png",
+  p15, width = 7, height = 6
+)
 
 # 16 – Coluna AJ (processos com resposta “absolvição sumária” na coluna AH): qual a distribuição das causas de absolvição sumária? =========================================================================
 
