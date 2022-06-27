@@ -174,29 +174,36 @@ ggplot2::ggsave(
 
 # 8 – Coluna AB: qual a distribuição no que diz respeito ao sexo dos réus? =========================================================================
 p08 <- da |>
-  dplyr::filter(!is.na(sexo_reus_julgados)) |>
-  dplyr::mutate(
-    n_reus_julgados = ifelse(n_reus_julgados == 1, "Um réu", "Dois réus"),
-    n_reus_julgados = factor(n_reus_julgados, levels = c("Um réu", "Dois réus")),
-    sexo_reus_julgados = forcats::fct_infreq(sexo_reus_julgados)
+  dplyr::transmute(
+    id_processo,
+    sexo_reu1 = dplyr::case_when(
+      n_reus_julgados == 1 ~ sexo_reus_julgados,
+      n_reus_julgados == 2 & sexo_reus_julgados == "Masculino" ~ "Masculino",
+      n_reus_julgados == 2 & sexo_reus_julgados == "Ambas" ~ "Masculino"
+    ),
+    sexo_reu2 = dplyr::case_when(
+      n_reus_julgados == 1 ~ NA_character_,
+      n_reus_julgados == 2 & sexo_reus_julgados == "Masculino" ~ "Masculino",
+      n_reus_julgados == 2 & sexo_reus_julgados == "Ambas" ~ "Feminino"
+    )
   ) |>
-  dplyr::count(n_reus_julgados, sexo_reus_julgados) |>
-  dplyr::group_by(n_reus_julgados) |>
+  tidyr::pivot_longer(cols = contains("sexo_reu"), values_to = "sexo_reus_julgados") |>
+  dplyr::filter(!is.na(sexo_reus_julgados)) |>
+  dplyr::count(sexo_reus_julgados) |>
+  dplyr::arrange(desc(n)) |>
   dplyr::mutate(
     prop = n/sum(n),
-    perc = formattable::percent(prop)
+    perc = formattable::percent(prop),
+    sexo_reus_julgados = forcats::fct_inorder(sexo_reus_julgados)
   ) |>
-  dplyr::ungroup() |>
   ggplot2::ggplot() +
-  ggplot2::aes(x = sexo_reus_julgados, y = prop, label = glue::glue("{n} casos\n({perc})")) +
+  ggplot2::aes(x = sexo_reus_julgados, y = n, label = perc) +
   ggplot2::geom_col(fill = cores_abj[1]) +
   ggplot2::geom_label() +
-  ggplot2::facet_wrap(~n_reus_julgados, scale = "free") +
-  ggplot2::scale_y_continuous(limits=c(0,1), breaks=c(0,.2,.4,.6,.8,1)) +
   ggplot2::labs(
-    title = "Distribuição do sexo dos réus julgados",
+    title = "Distribuição de sexo dos réus julgados",
     x = "Sexo dos réus julgados",
-    y = "Quantidade de processos"
+    y = "Quantidade de réus"
   )
 
 ggplot2::ggsave(
@@ -205,41 +212,49 @@ ggplot2::ggsave(
 )
 
 # 9 – Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
-da9 <- da |>
-  dplyr::filter(!is.na(cor_reus_julgados)) |>
-  dplyr::mutate(
-    n_reus_julgados = ifelse(n_reus_julgados == 1, "Um réu", "Dois réus"),
-    n_reus_julgados = factor(n_reus_julgados, levels = c("Um réu", "Dois réus")),
-    cor_reus_julgados = stringr::str_replace_all(cor_reus_julgados, ",", ",\n"),
-    ordered = glue::glue("{n_reus_julgados} - {cor_reus_julgados}")
+p09 <- da |>
+  dplyr::transmute(
+    id_processo,
+    cor_reu1 = dplyr::case_when(
+      n_reus_julgados == 1 ~ cor_reus_julgados,
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Parda" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Preta" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda, Preta" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta"
+    ),
+    cor_reu2 = dplyr::case_when(
+      n_reus_julgados == 1 ~ NA_character_,
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Parda" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda, Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta"
+    )
   ) |>
-  dplyr::count(n_reus_julgados, cor_reus_julgados, ordered) |>
+  tidyr::pivot_longer(cols = contains("cor_reu"), values_to = "cor_reus_julgados") |>
+  dplyr::filter(!is.na(cor_reus_julgados)) |>
+  dplyr::count(cor_reus_julgados) |>
   dplyr::arrange(desc(n)) |>
   dplyr::mutate(
-    ordered = forcats::fct_inorder(ordered),
-    col_dif = cor_reus_julgados == "Não consta"
-  ) |>
-  dplyr::group_by(n_reus_julgados) |>
-  dplyr::mutate(
     prop = n/sum(n),
-    perc = formattable::percent(prop)
+    perc = formattable::percent(prop),
+    col_dif = cor_reus_julgados == "Não consta",
+    cor_reus_julgados = forcats::fct_inorder(cor_reus_julgados)
   ) |>
-  dplyr::ungroup()
-
-p09 <- da9 |>
   ggplot2::ggplot() +
-  ggplot2::aes(x = ordered, y = prop, label = glue::glue("{n} casos\n({perc})")) +
+  ggplot2::aes(x = cor_reus_julgados, y = n, label = perc) +
   ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
   ggplot2::geom_label() +
-  ggplot2::facet_wrap(~n_reus_julgados, scale = "free_x") +
   ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
-  ggplot2::scale_x_discrete(
-    labels = setNames(da9$cor_reus_julgados, da9$ordered)
-  ) +
   ggplot2::labs(
-    title = "Distribuição da cor dos réus julgados",
+    title = "Distribuição de cor dos réus julgados",
     x = "Cor dos réus julgados",
-    y = "Quantidade de processos"
+    y = "Quantidade de réus"
   )
 
 ggplot2::ggsave(
@@ -341,32 +356,61 @@ ggplot2::ggsave(
 
 # 12 – Coluna AF: qual a distribuição no que diz respeito ao sexo das vítimas? =========================================================================
 p12 <- da |>
+  dplyr::transmute(
+    id_processo,
+    sexo_vitima1 = dplyr::case_when(
+      sexo_vitimas == "Não consta" ~ "Não consta",
+      n_vitimas == "1" ~ sexo_vitimas,
+      n_vitimas == "2" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "2" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "2" & sexo_vitimas == "Ambos" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino"
+    ),
+    sexo_vitima2 = dplyr::case_when(
+      n_vitimas == "1" ~ NA_character_,
+      n_vitimas == "2" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "2" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "2" & sexo_vitimas == "Ambos" ~ "Feminino",
+      n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino"
+    ),
+    sexo_vitima3 = dplyr::case_when(
+      n_vitimas == "1" ~ NA_character_,
+      n_vitimas == "2" ~ NA_character_,
+      n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos" ~ "Feminino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino"
+    ),
+    sexo_vitima4 = dplyr::case_when(
+      n_vitimas == "1" ~ NA_character_,
+      n_vitimas == "2" ~ NA_character_,
+      n_vitimas == "3" ~ NA_character_,
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino"
+    ),
+  ) |>
+  tidyr::pivot_longer(cols = contains("sexo_vitima"), values_to = "sexo_vitimas") |>
   dplyr::filter(!is.na(sexo_vitimas)) |>
-  dplyr::count(n_vitimas, sexo_vitimas) |>
+  dplyr::count(sexo_vitimas) |>
   dplyr::arrange(desc(n)) |>
-  dplyr::group_by(n_vitimas) |>
   dplyr::mutate(
+    sexo_vitimas = forcats::fct_inorder(sexo_vitimas),
+    sexo_vitimas = forcats::fct_relevel(sexo_vitimas, after = Inf, "Não consta"),
     prop = n/sum(n),
     perc = formattable::percent(prop),
-    n_vitimas = dplyr::case_when(
-      n_vitimas == "1" ~ glue::glue("{n_vitimas} vítima"),
-      n_vitimas != "Não consta" ~ glue::glue("{n_vitimas} vítimas"),
-      n_vitimas == "Não consta"~ "Não consta"
-    ),
-    col_dif = sexo_vitimas == "Não consta",
-    sexo_vitimas = forcats::fct_inorder(sexo_vitimas),
-    sexo_vitimas = forcats::fct_relevel(sexo_vitimas, after = Inf, "Não consta")
+    col_dif = sexo_vitimas == "Não consta"
   ) |>
-  dplyr::ungroup() |>
   ggplot2::ggplot() +
-  ggplot2::aes(x = sexo_vitimas, y = n, label = n) +
+  ggplot2::aes(x = sexo_vitimas, y = n, label = perc) +
   ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
   ggplot2::geom_label() +
-  ggplot2::facet_wrap(~n_vitimas, scales = "free") +
   ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
+    title = "Distribuição do sexo das vítimas",
     x = "Sexo das vítimas",
-    y = "Quantidade de processos"
+    y = "Quantidade de vítimas"
   )
 
 ggplot2::ggsave(
