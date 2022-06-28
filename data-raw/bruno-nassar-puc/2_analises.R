@@ -18,7 +18,7 @@ grafico_base <- function(da, var) {
     ggplot2::geom_label()
 }
 
-fs::dir_create("data-raw/bruno-nassar-puc/img")
+# fs::dir_create("data-raw/bruno-nassar-puc/img")
 
 # 1 – Coluna C: qual a distribuição de processos entre as varas? =========================================================================
 p01 <- da |>
@@ -374,7 +374,7 @@ p12 <- da |>
       n_vitimas == "2" & sexo_vitimas == "Feminino" ~ "Feminino",
       n_vitimas == "2" & sexo_vitimas == "Ambos" ~ "Feminino",
       n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
-      n_vitimas == "3" & sexo_vitimas == "Ambos" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos" ~ "Feminino",
       n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino"
     ),
     sexo_vitima3 = dplyr::case_when(
@@ -417,6 +417,7 @@ ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p12.png",
   p12, width = 10, height = 6
 )
+
 # 13 – Coluna AG - qual a distribuição no que diz respeito à delegacia que desenvolveu o IP? =========================================================================
 p13 <- da |>
   dplyr::mutate(agente_ip = forcats::fct_infreq(agente_ip)) |>
@@ -450,10 +451,33 @@ ggplot2::ggsave(
 )
 
 # 15 – Coluna AI: qual a distribuição no que diz respeito a se o processo foi adiado pela pandemia? =========================================================================
+
+E uma questão que eu percebi agora:
+soma-se a isso que processos que tiveram plenário em 2019 mesmo,
+absolvição sumária, extinção da punibilidade,
+impronúncia ou declassificação na primeira fase do júri
+
+decisao_sem_juri <- c(
+  "Sentença de absolvição sumária",
+  "\"Sentença\" de impronúncia",
+  "Decisão de desclassificação proferida ao fim da primeira fase do júri",
+  "Sentença de extinção da punibilidade"
+)
+
 p15 <- da |>
+  dplyr::mutate(
+    id_processo,
+    pandemia_juri = dplyr::case_when(
+      natureza_decisao %in% decisao_sem_juri ~ NA_character_,
+      pandemia_juri == "Sim" ~ "Não, em razão da pandemia",
+      pandemia_juri == "Não" ~ "Sim"
+    ),
+    pandemia_juri = forcats::fct_infreq(pandemia_juri)
+  ) |>
   grafico_base(pandemia_juri) +
   ggplot2::labs(
-    x = "Ainda não foi designado o plenário do júri em razão da pandemia?",
+    title = "Efeitos da pandemia na realização do plenário do júri",
+    x = "O plenário do júri já foi designado?",
     y = "Quantidade de processos"
   )
 
@@ -463,27 +487,164 @@ ggplot2::ggsave(
 )
 
 # 16 – Coluna AJ (processos com resposta “absolvição sumária” na coluna AH): qual a distribuição das causas de absolvição sumária? =========================================================================
+n_absolvicao_sumaria <- da |>
+  dplyr::filter(natureza_decisao == "Sentença de absolvição sumária") |>
+  nrow()
+
+p16 <- da |>
+  dplyr::filter(natureza_decisao == "Sentença de absolvição sumária") |>
+  dplyr::mutate(
+    fundamento_36 = forcats::fct_infreq(fundamento_36)
+  ) |>
+  grafico_base(fundamento_36) +
+  ggplot2::labs(
+    title = glue::glue("Fundamentos para a Absolvição Sumária (N = {n_absolvicao_sumaria})"),
+    x = "Fundamento",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p16.png",
+  p16, width = 7, height = 6
+)
 
 # 17 – Coluna AK (processos com resposta “extinção da punibilidade” na coluna AH): qual a distribuição das causas de extinção da punibilidade? =========================================================================
+n_extincao_punibilidade <- da |>
+  dplyr::filter(natureza_decisao == "Sentença de extinção da punibilidade") |>
+  nrow()
+
+p17 <- da |>
+  dplyr::filter(natureza_decisao == "Sentença de extinção da punibilidade") |>
+  dplyr::mutate(
+    causa_de_extincao_da_punibilidade = forcats::fct_infreq(causa_de_extincao_da_punibilidade)
+  ) |>
+  grafico_base(causa_de_extincao_da_punibilidade) +
+  ggplot2::labs(
+    title = glue::glue("Fundamentos para a Extinção da Punibilidade (N = {n_extincao_punibilidade})"),
+    x = "Fundamento",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p17.png",
+  p17, width = 8, height = 6
+)
 
 # 18 – Processos que tiveram pronúncia (resposta “sentença de pronúncia” ou “sentença após plenário do júri” na coluna AH): =========================================================================
+da18 <- da |>
+  dplyr::filter(
+    natureza_decisao == "\"Sentença\" de pronúncia" |
+      natureza_decisao == "Sentença após plenário do júri"
+  )
+
+n18 <- nrow(da18)
+
 # a) Coluna AL: quantos casos tiveram uma dessas decisões convertida em pronúncia? -----------------------------------------------------------------------
+p18a <- da18 |>
+  dplyr::mutate(conversao_pronuncia = forcats::fct_infreq(conversao_pronuncia)) |>
+  grafico_base(conversao_pronuncia) +
+  ggplot2::labs(
+    title = glue::glue("Conversão em pronúncia (N = {n18})"),
+    x = "A decisão foi convertida em pronúncia?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p18a.png",
+  p18a, width = 8, height = 6
+)
+
 # b) Coluna AO: quantos casos tiveram RESE? -----------------------------------------------------------------------
-da |>
+p18b <- da18 |>
+  dplyr::mutate(pronuncia_rese = forcats::fct_infreq(pronuncia_rese)) |>
   grafico_base(pronuncia_rese) +
   ggplot2::labs(
-    x = "A pronúncia foi alvo de RESE",
+    title = glue::glue("RESE (N = {n18})"),
+    x = "A pronúncia foi alvo de RESE?",
     y = "QUantidade de processos"
   )
 
-# c) Coluna AP: para os casos que tiveram como resposta “sim” na coluna AO, medir o tempo entre a sentença de pronúncia (coluna M) e a decisão sobre o RESE (coluna AP). Para esses casos, medir também o tempo entre a sentença de pronúncia (coluna M) e o plenário (coluna N. Mas só se já houve plenário, ou seja, casos com resposta “sentença após plenário do júri” na coluna AH”). -----------------------------------------------------------------------
-da |>
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p18b.png",
+  p18b, width = 8, height = 6
+)
+
+# c) Coluna AP: para os casos que tiveram como resposta “sim” na coluna AO, medir o tempo entre a sentença de pronúncia (coluna M) e a decisão sobre o RESE (coluna AP).  -----------------------------------------------------------------------
+n_rese <- da18 |>
+  dplyr::filter(pronuncia_rese == "Sim") |>
+  nrow()
+
+da18c <- da18 |>
   dplyr::filter(pronuncia_rese == "Sim") |>
   dplyr::mutate(
-    tempo_sentenca_rese =  dt_acordao_rese - dt_pronuncia
+    tempo_sentenca_rese =  as.numeric(dt_acordao_rese - dt_pronuncia)
   ) |>
   dplyr::select(id_processo, tempo_sentenca_rese) |>
   dplyr::filter(tempo_sentenca_rese >= 0)
+
+media_pronuncia_rese <- round(mean(da18c$tempo_sentenca_rese))
+
+p18c <- da18c |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_sentenca_rese) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
+  ggplot2::geom_vline(xintercept = media_pronuncia_rese, color = "red", linetype = 2) +
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = paste0(media_pronuncia_rese, " dias"),
+      x = media_pronuncia_rese + 40,
+      y = 3.5
+    ),
+    color = "red"
+  ) +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a decisão de pronúncia e a decisão sobre o RESE\n(N = {n_rese})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p18c.png",
+  p18c, width = 8, height = 4
+)
+# d) Para esses casos, medir também o tempo entre a sentença de pronúncia (coluna M) e o plenário (coluna N. Mas só se já houve plenário, ou seja, casos com resposta “sentença após plenário do júri” na coluna AH”). -----------------------------------------------------------------------
+n_plenario <- da18 |>
+  dplyr::filter(natureza_decisao == "Sentença após plenário do júri") |>
+  nrow()
+
+da18d <- da18 |>
+  dplyr::filter(natureza_decisao == "Sentença após plenário do júri") |>
+  dplyr::mutate(
+    tempo_sentenca_plenario = as.numeric(dt_plenario - dt_pronuncia)
+  ) |>
+  dplyr::select(id_processo, tempo_sentenca_plenario) |>
+  dplyr::filter(tempo_sentenca_plenario >= 0)
+
+media_pronuncia_plenario <- round(mean(da18d$tempo_sentenca_plenario))
+
+p18d <- da18d |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_sentenca_plenario) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
+  ggplot2::geom_vline(xintercept = media_pronuncia_plenario, color = "red", linetype = 2) +
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = paste0(media_pronuncia_rese, " dias"),
+      x = media_pronuncia_rese + 70,
+      y = 5.2
+    ),
+    color = "red"
+  ) +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a decisão de pronúncia e a decisão sobre o RESE\n(N = {n_plenario})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p18d.png",
+  p18d, width = 8, height = 4
+)
 
 # 19 – Processos que tiveram sentença após plenário (resposta “sentença após plenário do júri” na coluna AH): =========================================================================
 # a) Coluna AH: qual a distribuição no que diz respeito à natureza da defesa? -----------------------------------------------------------------------
@@ -510,7 +671,7 @@ da |>
 # d) Coluna BI: o recurso já foi julgado? -----------------------------------------------------------------------
 # e) Coluna BJ: nos casos em que o recurso já foi julgado (resposta “sim” na coluna BI), qual o lapso temporal entre a data da sentença (coluna N) e a data do julgamento do recurso -----------------------------------------------------------------------
 # f) Coluna BK: nos casos em que o recurso já foi julgado (resposta “sim” na coluna BI), qual foi o resultado do acórdão? Nos casos em que o recurso foi provido ou parcialmente provido, indicar em quantos deles foi alterada a pena (coluna BL) e/ou o regime de cumprimento -----------------------------------------------------------------------
-# (coluna BM) e para qual patamar em cada caso -----------------------------------------------------------------------
+# g) (coluna BM) e para qual patamar em cada caso -----------------------------------------------------------------------
 
 # 23 – Sentença nulificada: =========================================================================
 # a) Coluna BN: em quantos casos houve sentença nulificada? -----------------------------------------------------------------------
