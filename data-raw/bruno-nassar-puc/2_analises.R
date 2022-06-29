@@ -452,11 +452,6 @@ ggplot2::ggsave(
 
 # 15 – Coluna AI: qual a distribuição no que diz respeito a se o processo foi adiado pela pandemia? =========================================================================
 
-E uma questão que eu percebi agora:
-soma-se a isso que processos que tiveram plenário em 2019 mesmo,
-absolvição sumária, extinção da punibilidade,
-impronúncia ou declassificação na primeira fase do júri
-
 decisao_sem_juri <- c(
   "Sentença de absolvição sumária",
   "\"Sentença\" de impronúncia",
@@ -647,16 +642,152 @@ ggplot2::ggsave(
 )
 
 # 19 – Processos que tiveram sentença após plenário (resposta “sentença após plenário do júri” na coluna AH): =========================================================================
+da19 <- da |>
+  dplyr::filter(natureza_decisao == "Sentença após plenário do júri")
+
+n19 <- nrow(da19)
+
 # a) Coluna AH: qual a distribuição no que diz respeito à natureza da defesa? -----------------------------------------------------------------------
+p19a <- da19 |>
+  dplyr::mutate(defesa_inicial = forcats::fct_infreq(defesa_inicial)) |>
+  grafico_base(defesa_inicial) +
+  ggplot2::labs(
+    title = glue::glue("Natureza da defesa inicial (N = {n19})"),
+    x = "Tipo de defesa",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p19a.png",
+  p19a, width = 8, height = 4
+)
+
 # b) Coluna AR: em quantos casos houve mudança da defesa no curso do processo? -----------------------------------------------------------------------
+p19b <- da19 |>
+  dplyr::mutate(defesa_mudanca = forcats::fct_infreq(defesa_mudanca)) |>
+  dplyr::filter(!is.na(defesa_mudanca)) |>
+  dplyr::count(defesa_inicial, defesa_mudanca) |>
+  dplyr::group_by(defesa_inicial) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = defesa_mudanca == "Não consta"
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = defesa_mudanca, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::facet_wrap(~defesa_inicial,scales = "free_x") +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = glue::glue("Mudança de defesa (N = {n19})"),
+    x = "Houve mudança da defesa no curso do processo?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p19b.png",
+  p19b, width = 7, height = 6
+)
+
 # c) Coluna AS: em quantos casos houve assistente de acusação colaborando em plenário? -----------------------------------------------------------------------
+p19c <- da19 |>
+  dplyr::mutate(assistente_de_acusacao = forcats::fct_infreq(assistente_de_acusacao)) |>
+  dplyr::filter(!is.na(assistente_de_acusacao)) |>
+  dplyr::count(assistente_de_acusacao) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = assistente_de_acusacao == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = assistente_de_acusacao, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = glue::glue("Assistente de acusação (N = {n19})"),
+    x = "Houve assistente de acusação colaborando em plenário?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p19c.png",
+  p19c, width = 7, height = 6
+)
+
 # d) Coluna AT: qual foi a distribuição quanto ao resultado do julgamento? -----------------------------------------------------------------------
+p19d <- da19 |>
+  dplyr::mutate(julgamento = forcats::fct_infreq(julgamento)) |>
+  grafico_base(julgamento) +
+  ggplot2::labs(
+    title = glue::glue("Resultados do julgamento (N = {n19})"),
+    x = "Resultado do julgamento",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p19d.png",
+  p19d, width = 7, height = 6
+)
+
 # e) Coluna AU: para os casos com resultado “desclassificação” na coluna AT, qual foi o resultado do julgamento? -----------------------------------------------------------------------
+n19d <- da19 |>
+  dplyr::filter(julgamento == "Desclassificação") |>
+  nrow()
+
+p19e <- da19 |>
+  dplyr::filter(julgamento == "Desclassificação") |>
+  dplyr::mutate(desclassificacao = forcats::fct_infreq(desclassificacao)) |>
+  grafico_base(desclassificacao) +
+  ggplot2::labs(
+    title = glue::glue("Natureza da defesa mudada (N = {n19d})"),
+    x = "Tipo de defesa",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p19e.png",
+  p19e, width = 7, height = 6
+)
 
 # 20 – Processos que tiveram resultado condenação após plenário (resposta “condenação sobre crime de homicídio” na coluna AT): =========================================================================
+da_condenacao <- da |>
+  dplyr::filter(julgamento == "Condenação sobre o crime de homicídio")
+
+n_condenacao <- nrow(da_condenacao)
 
 # a) Coluna AW: qual a distribuição quanto ao resultado do crime? -----------------------------------------------------------------------
+p20a <- da_condenacao |>
+  dplyr::mutate(resultado_crime = forcats::fct_infreq(resultado_crime)) |>
+  grafico_base(resultado_crime) +
+  ggplot2::labs(
+    title = glue::glue("Resultado do crime (N = {n_condenacao})"),
+    x = "Resultado do crime",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p20a.png",
+  p20a, width = 8, height = 5
+)
+
 # b) Coluna BA: qual a distribuição quanto às possíveis causas de aumento? -----------------------------------------------------------------------
+da_condenacao |>
+  dplyr::mutate(resultado_crime = forcats::fct_infreq(resultado_crime)) |>
+  grafico_base(resultado_crime) +
+  ggplot2::labs(
+    title = glue::glue("Resultado do crime (N = {n_condenacao})"),
+    x = "Resultado do crime",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p20b.png",
+  p20b, width = 8, height = 5
+)
+
 # c) Coluna BB: quantos réus são reincidentes e quantos não são? -----------------------------------------------------------------------
 # d) Coluna BC: quantos casos foram homicídios privilegiados? -----------------------------------------------------------------------
 

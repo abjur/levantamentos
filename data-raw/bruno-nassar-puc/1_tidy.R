@@ -57,7 +57,7 @@ da_tidy <- da_bruta |>
     defesa_mudanca = houve_mudanca_na_natureza_da_defesa_durante_o_curso_do_processo,
     assistente_de_acusacao = ha_assistente_da_acusacao,
     julgamento = resultado_do_julgamento,
-    desclassificao = resultado_da_sentenca_desclassificacao,
+    desclassificacao = resultado_da_sentenca_desclassificacao,
     oferecimento_sursis = coube_oferecimento_de_proposta_de_sursis,
     resultado_crime = resultado_do_crime,
     conexao_organizacao_criminos = de_acordo_com_a_sentenca_ha_conexao_do_crime_com_atividade_de_organizacao_criminosa,
