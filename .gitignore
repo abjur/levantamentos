@@ -28,3 +28,7 @@ data-raw/projeto-armas/data/
 .Rdata
 .httr-oauth
 .DS_Store
+data-raw/felipecamargo-cpfl/cjpg/
+data-raw/felipecamargo-cpfl/cpopg_cjpg/
+data-raw/felipecamargo-cpfl/cpopg_cnpj/
+data-raw/felipecamargo-cpfl/cpopg_cnpj_foros/
