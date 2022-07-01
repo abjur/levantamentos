@@ -24,6 +24,16 @@ data-raw/lucro-cessante/xlsx/
 data-raw/irdr-tema3/bases/
 data-raw/irdr-tema3/cpopg*/
 data-raw/homicidios/bases
+data-raw/projeto-armas/data/
 .Rdata
 .httr-oauth
 .DS_Store
+data-raw/felipecamargo-cpfl/cjpg/
+data-raw/felipecamargo-cpfl/cpopg_cjpg/
+data-raw/felipecamargo-cpfl/cpopg_cnpj/
+data-raw/felipecamargo-cpfl/cpopg_cnpj_foros/
+data-raw/improb-admin/cjsg/
+data-raw/improb-admin/cposg/
+data-raw/vara-barra-funda/dados/
+data-raw/vara-barra-funda/dados2/
+data-raw/vara-barra-funda/codigo/
