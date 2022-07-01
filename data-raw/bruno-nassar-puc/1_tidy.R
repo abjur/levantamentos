@@ -72,7 +72,7 @@ da_tidy <- da_bruta |>
     recurso = foi_interposto_recurso_contra_a_sentenca,
     quem_interpos_recurso = quem_interpos_o_recurso,
     recurso_ja_foi_julgado = se_interposto_o_recurso_de_apelacao_ja_foi_julgado,
-    dt_acordao = data_do_acordao,
+    dt_acordao = lubridate::mdy(data_do_acordao),
     decisao_acordao = resultado_do_acordao,
     alteracao_pena = se_alterada_a_pena_para_outro_patamar_informar_qual,
     alteracao_regime = se_alterado_o_regime_de_cumprimento_inicial_informar_qual,
@@ -83,6 +83,6 @@ da_tidy <- da_bruta |>
     dt_acordao_nulificada = lubridate::mdy(data_do_acordao_que_nulificou_a_sentenca)
   )
 
-fs::dir_create("data-raw/bruno-nassar-puc/data")
+# fs::dir_create("data-raw/bruno-nassar-puc/data")
 
 readr::write_rds(da_tidy, "data-raw/bruno-nassar-puc/data/homicidios_tidy.rds")

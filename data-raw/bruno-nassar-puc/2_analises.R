@@ -433,6 +433,10 @@ ggplot2::ggsave(
 )
 
 # 14 – Coluna AH: qual a distribuição no que diz respeito à natureza da decisão? =========================================================================
+n14 <- da |>
+  dplyr::filter(!is.na(natureza_decisao)) |>
+  nrow()
+
 p14 <- da |>
   dplyr::mutate(
     # natureza_decisao = stringr::str_remove_all(natureza_decisao, "\""),
@@ -441,13 +445,14 @@ p14 <- da |>
   grafico_base(natureza_decisao) +
   ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
   ggplot2::labs(
+    title = glue::glue("Distribuição dos tipos de decisão (N = {n14})"),
     x = "Natureza da decisão",
     y = "Quantidade de processos"
   )
 
 ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p14.png",
-  p14, width = 10, height = 4
+  p14, width = 10, height = 6
 )
 
 # 15 – Coluna AI: qual a distribuição no que diz respeito a se o processo foi adiado pela pandemia? =========================================================================
@@ -763,7 +768,7 @@ p20a <- da_condenacao |>
   dplyr::mutate(resultado_crime = forcats::fct_infreq(resultado_crime)) |>
   grafico_base(resultado_crime) +
   ggplot2::labs(
-    title = glue::glue("Resultado do crime (N = {n_condenacao})"),
+    title = glue::glue("Resultado do crime  nos casos de condenação por homicídio (N = {n_condenacao})"),
     x = "Resultado do crime",
     y = "Quantidade de processos"
   )
@@ -774,35 +779,282 @@ ggplot2::ggsave(
 )
 
 # b) Coluna BA: qual a distribuição quanto às possíveis causas de aumento? -----------------------------------------------------------------------
-da_condenacao |>
-  dplyr::mutate(resultado_crime = forcats::fct_infreq(resultado_crime)) |>
-  grafico_base(resultado_crime) +
+n20b <- da_condenacao |>
+  dplyr::filter(plenario_causas_aumento != "N/A") |>
+  nrow()
+
+p20b <- da_condenacao |>
+  dplyr::mutate(
+    plenario_causas_aumento = ifelse(plenario_causas_aumento == "N/A", NA_character_, plenario_causas_aumento),
+    plenario_causas_aumento = forcats::fct_infreq(plenario_causas_aumento)
+  ) |>
+  grafico_base(plenario_causas_aumento) +
   ggplot2::labs(
-    title = glue::glue("Resultado do crime (N = {n_condenacao})"),
-    x = "Resultado do crime",
+    title = glue::glue("Distribuição das causas de aumento da pena nos casos de\ncondenação por homicídio (N = {n20b})"),
+    x = "Causas de aumento",
     y = "Quantidade de processos"
   )
 
 ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p20b.png",
-  p20b, width = 8, height = 5
+  p20b, width = 7, height = 6
 )
 
+# tomar cuidado, N muito pequeno
+
 # c) Coluna BB: quantos réus são reincidentes e quantos não são? -----------------------------------------------------------------------
+p20c <- da_condenacao |>
+  dplyr::mutate(reincidente = forcats::fct_infreq(reincidente)) |>
+  grafico_base(reincidente) +
+  ggplot2::labs(
+    title = glue::glue("Reincidência dos réus condendos por homicídio (N = {n_condenacao})"),
+    x = "O réu é reincidente?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p20c.png",
+  p20c, width = 7, height = 6
+)
+
 # d) Coluna BC: quantos casos foram homicídios privilegiados? -----------------------------------------------------------------------
+p20d <- da_condenacao |>
+  dplyr::mutate(homicidio_privilegido = forcats::fct_infreq(homicidio_privilegido)) |>
+  grafico_base(homicidio_privilegido) +
+  ggplot2::labs(
+    title = glue::glue("Incidência de homicídio privilegiado nos casos de condenação\npor homicídio (N = {n_condenacao})"),
+    x = "O homicídio foi privilegiado?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p20d.png",
+  p20d, width = 7, height = 6
+)
 
 # 21 – Pena dos processos que tiveram condenação: =========================================================================
 # a) Coluna BD: qual foi o tempo de pena? -----------------------------------------------------------------------
+p21a <- da_condenacao |>
+  dplyr::mutate(
+    tempo_pena = dplyr::case_when(
+      tempo_pena == "Inferior a 2 anos" ~ "Até 2 anos",
+      tempo_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Entre 2 e 4 anos",
+      tempo_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Entre 4 e 8 anos",
+      tempo_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Entre 8 e 12 anos",
+      tempo_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Entre 12 e 15 anos",
+      tempo_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Entre 15 e 20 anos",
+      tempo_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Entre 20 e 30 anos",
+      tempo_pena == "Igual ou superior a 30 anos" ~ "Igual ou superior a 30 anos"
+    ),
+    tempo_pena = factor(
+      tempo_pena,
+      levels = c(
+        "Até dois anos",
+        "Entre 2 e 4 anos",
+        "Entre 4 e 8 anos",
+        "Entre 8 e 12 anos",
+        "Entre 12 e 15 anos",
+        "Entre 15 e 20 anos",
+        "Entre 20 e 30 anos",
+        "Igual ou superior a 30 anos"
+      )
+    )
+  ) |>
+  grafico_base(tempo_pena) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo de pena dos casos de condenação por homicídio (N = {n_condenacao})"),
+    x = "Tempo de pena",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p21a.png",
+  p21a, width = 10, height = 6
+)
+
 # b) Coluna BE: qual foi o regime de pena aplicado? -----------------------------------------------------------------------
+p21b <- da_condenacao |>
+  dplyr::mutate(regime_inicial = forcats::fct_infreq(regime_inicial)) |>
+  grafico_base(regime_inicial) +
+  ggplot2::labs(
+    title = glue::glue("Regime de pena inicial nos casos de condenação\npor homicídio (N = {n_condenacao})"),
+    x = "Regime de pena",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p21b.png",
+  p21b, width = 8, height = 5
+)
 
 # 22 – Recurso: =========================================================================
 # a) Coluna BF: O réu pôde recorrer em liberdade? -----------------------------------------------------------------------
+n_liberdade <- da |>
+  dplyr::filter(!is.na(pode_liberdade)) |>
+  nrow()
+
+p22a <- da |>
+  dplyr::mutate(pode_liberdade = forcats::fct_infreq(pode_liberdade)) |>
+  grafico_base(pode_liberdade) +
+  ggplot2::labs(
+    title = glue::glue("Recurso em liberdade (N = {n_liberdade})"),
+    x = "O réu pôde recorrer em liberdade?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22a.png",
+  p22a, width = 7, height = 6
+)
+
 # b) Coluna BG: em quantos casos foi interposto recurso contra a sentença? -----------------------------------------------------------------------
+n_recurso <- da |>
+  dplyr::filter(!is.na(recurso)) |>
+  nrow()
+
+p22b <- da |>
+  dplyr::mutate(recurso = forcats::fct_infreq(recurso)) |>
+  grafico_base(recurso) +
+  ggplot2::labs(
+    title = glue::glue("Presença de recurso (N = {n_recurso})"),
+    x = "Foi interposto recurso contra sentença?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22b.png",
+  p22b, width = 7, height = 6
+)
+
 # c) Coluna BH: quem interpôs o recurso? -----------------------------------------------------------------------
+n_teve_recurso <- da |>
+  dplyr::filter(!is.na(quem_interpos_recurso)) |>
+  nrow()
+
+p22c <- da |>
+  dplyr::mutate(quem_interpos_recurso = forcats::fct_infreq(quem_interpos_recurso)) |>
+  grafico_base(quem_interpos_recurso) +
+  ggplot2::labs(
+    title = glue::glue("Polo que interpôs recurso (N = {n_teve_recurso})"),
+    x = "Quem interpôs recurso",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22c.png",
+  p22c, width = 8, height = 5
+)
+
 # d) Coluna BI: o recurso já foi julgado? -----------------------------------------------------------------------
+p22d <- da |>
+  dplyr::mutate(recurso_ja_foi_julgado = forcats::fct_infreq(recurso_ja_foi_julgado)) |>
+  dplyr::filter(!is.na(recurso_ja_foi_julgado)) |>
+  dplyr::count(recurso_ja_foi_julgado) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = recurso_ja_foi_julgado == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = recurso_ja_foi_julgado, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = glue::glue("Julgamento dos recursos (N = {n_teve_recurso})"),
+    x = "O recurso já foi julgado?",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22d.png",
+  p22d, width = 8, height = 5
+)
+
 # e) Coluna BJ: nos casos em que o recurso já foi julgado (resposta “sim” na coluna BI), qual o lapso temporal entre a data da sentença (coluna N) e a data do julgamento do recurso -----------------------------------------------------------------------
-# f) Coluna BK: nos casos em que o recurso já foi julgado (resposta “sim” na coluna BI), qual foi o resultado do acórdão? Nos casos em que o recurso foi provido ou parcialmente provido, indicar em quantos deles foi alterada a pena (coluna BL) e/ou o regime de cumprimento -----------------------------------------------------------------------
-# g) (coluna BM) e para qual patamar em cada caso -----------------------------------------------------------------------
+n_teve_julgamento_recurso <- da |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  nrow()
+
+p22e <- da |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  dplyr::select(dt_plenario, dt_acordao) |>
+  dplyr::mutate(tempo_sentenca_acordao = as.numeric(dt_acordao - dt_plenario)) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_sentenca_acordao) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 10) +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a sentença e o acórdão (N = {n_teve_julgamento_recurso})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22e.png",
+  p22e, width = 10, height = 5
+)
+# f) Coluna BK: nos casos em que o recurso já foi julgado (resposta “sim” na coluna BI), qual foi o resultado do acórdão? -----------------------------------------------------------------------
+da |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  dplyr::mutate(
+    alteracao = dplyr::case_when(
+      !is.na(alteracao_regime) ~ "Sim",
+      !is.na(alteracao_pena) ~ "Sim",
+      TRUE ~ "Não"
+    )
+  ) |>
+  dplyr::mutate(decisao_acordao = forcats::fct_infreq(decisao_acordao)) |>
+  dplyr::count(decisao_acordao, alteracao) |>
+  dplyr::group_by(decisao_acordao) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    alteracao = dplyr::case_when(
+      decisao_acordao == "Improvido" ~ "Não se aplica",
+      TRUE ~ alteracao
+    )
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = decisao_acordao, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = alteracao), position = "dodge") +
+  ggplot2::scale_fill_viridis_d("Alteração da sentença",
+                                begin = 0.2, end = 0.7, direction = 1)
+  grafico_base(decisao_acordao) +
+  ggplot2::labs(
+    title = glue::glue("Resultado dos acórdãos (N = {n_teve_julgamento_recurso})"),
+    x = "Resultado do acórdão",
+    y = "Quantidade de processos"
+  )
+
+# Não terminado
+# ggplot2::ggsave(
+#   "data-raw/bruno-nassar-puc/img/p22f.png",
+#   p22f, width = 8, height = 6
+# )
+
+# g) Nos casos em que o recurso foi provido ou parcialmente provido, indicar em quantos deles foi alterada a pena (coluna BL) e/ou o regime de cumprimento -----------------------------------------------------------------------
+n_acordao_parcial <- da |>
+  dplyr::filter(decisao_acordao != "Improvido") |>
+  nrow()
+
+da_alteracao_regime <-da |>
+  dplyr::filter(decisao_acordao != "Improvido", !is.na(alteracao_regime)) |>
+  dplyr::count(regime_inicial, alteracao_regime)
+
+da_alteracao_pena <- da |>
+  dplyr::filter(decisao_acordao != "Improvido", !is.na(alteracao_pena))  |>
+  dplyr::count(tempo_pena, alteracao_pena)
+
+processos_alteracao_pena <- da |>
+  dplyr::filter(tempo_pena == alteracao_pena) |>
+  dplyr::pull(id_processo)
+
+processos_alteracao_regime <- da |>
+  dplyr::filter(regime_inicial == alteracao_regime) |>
+  dplyr::pull(id_processo)
+
+# h) (coluna BM) e para qual patamar em cada caso -----------------------------------------------------------------------
 
 # 23 – Sentença nulificada: =========================================================================
 # a) Coluna BN: em quantos casos houve sentença nulificada? -----------------------------------------------------------------------
