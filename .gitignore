@@ -24,6 +24,7 @@ data-raw/lucro-cessante/xlsx/
 data-raw/irdr-tema3/bases/
 data-raw/irdr-tema3/cpopg*/
 data-raw/homicidios/bases
+data-raw/projeto-armas/data/
 .Rdata
 .httr-oauth
 .DS_Store
