@@ -995,66 +995,180 @@ ggplot2::ggsave(
   p22e, width = 10, height = 5
 )
 # f) Coluna BK: nos casos em que o recurso já foi julgado (resposta “sim” na coluna BI), qual foi o resultado do acórdão? -----------------------------------------------------------------------
-da |>
+p22f <- da |>
   dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
   dplyr::mutate(
-    alteracao = dplyr::case_when(
-      !is.na(alteracao_regime) ~ "Sim",
-      !is.na(alteracao_pena) ~ "Sim",
-      TRUE ~ "Não"
-    )
+    decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao)
   ) |>
   dplyr::mutate(decisao_acordao = forcats::fct_infreq(decisao_acordao)) |>
-  dplyr::count(decisao_acordao, alteracao) |>
-  dplyr::group_by(decisao_acordao) |>
+  dplyr::count(decisao_acordao) |>
   dplyr::mutate(
     prop = n/sum(n),
-    perc = formattable::percent(prop),
-    alteracao = dplyr::case_when(
-      decisao_acordao == "Improvido" ~ "Não se aplica",
-      TRUE ~ alteracao
-    )
+    perc = formattable::percent(prop)
   ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = decisao_acordao, y = n, label = perc) +
-  ggplot2::geom_col(ggplot2::aes(fill = alteracao), position = "dodge") +
-  ggplot2::scale_fill_viridis_d("Alteração da sentença",
-                                begin = 0.2, end = 0.7, direction = 1)
-  grafico_base(decisao_acordao) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label() +
   ggplot2::labs(
     title = glue::glue("Resultado dos acórdãos (N = {n_teve_julgamento_recurso})"),
     x = "Resultado do acórdão",
     y = "Quantidade de processos"
   )
 
-# Não terminado
-# ggplot2::ggsave(
-#   "data-raw/bruno-nassar-puc/img/p22f.png",
-#   p22f, width = 8, height = 6
-# )
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22f.png",
+  p22f, width = 7, height = 6
+)
 
 # g) Nos casos em que o recurso foi provido ou parcialmente provido, indicar em quantos deles foi alterada a pena (coluna BL) e/ou o regime de cumprimento -----------------------------------------------------------------------
-n_acordao_parcial <- da |>
-  dplyr::filter(decisao_acordao != "Improvido") |>
+n22g <- da |>
+  dplyr::mutate(
+    decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao)
+  ) |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  dplyr::filter(decisao_acordao == "Parcialmente provido") |>
   nrow()
 
-da_alteracao_regime <-da |>
-  dplyr::filter(decisao_acordao != "Improvido", !is.na(alteracao_regime)) |>
-  dplyr::count(regime_inicial, alteracao_regime)
+p22g <- da |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  dplyr::mutate(
+    alteracao = dplyr::case_when(
+      !is.na(alteracao_regime) ~ "Sim",
+      !is.na(alteracao_pena) ~ "Sim",
+      TRUE ~ "Não"
+    ),
+    decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao)
+  ) |>
+  dplyr::filter(decisao_acordao == "Parcialmente provido") |>
+  dplyr::mutate(alteracao = forcats::fct_infreq(alteracao)) |>
+  grafico_base(alteracao) +
+  ggplot2::labs(
+    title = glue::glue("Acórdãos que tiveram alteração de sentença (N = {n22g})"),
+    x = "Houve alteração de sentença?",
+    y = "Quantidade de processos"
+  )
 
-da_alteracao_pena <- da |>
-  dplyr::filter(decisao_acordao != "Improvido", !is.na(alteracao_pena))  |>
-  dplyr::count(tempo_pena, alteracao_pena)
-
-processos_alteracao_pena <- da |>
-  dplyr::filter(tempo_pena == alteracao_pena) |>
-  dplyr::pull(id_processo)
-
-processos_alteracao_regime <- da |>
-  dplyr::filter(regime_inicial == alteracao_regime) |>
-  dplyr::pull(id_processo)
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22g.png",
+  p22g, width = 7, height = 6
+)
 
 # h) (coluna BM) e para qual patamar em cada caso -----------------------------------------------------------------------
+n22h_pena <- da |>
+  dplyr::filter(!is.na(alteracao_pena)) |>
+  nrow()
+
+n22h_regime <- da |>
+  dplyr::filter(!is.na(alteracao_regime)) |>
+  nrow()
+
+p22h_pena <- da |>
+  dplyr::mutate(
+    decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao),
+    tempo_pena = dplyr::case_when(
+      tempo_pena == "Inferior a 2 anos" ~ "Pena inicial: Até 2 anos",
+      tempo_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Pena inicial: Entre 2 e 4 anos",
+      tempo_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Pena inicial: Entre 4 e 8 anos",
+      tempo_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Pena inicial: Entre 8 e 12 anos",
+      tempo_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Pena inicial: Entre 12 e 15 anos",
+      tempo_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Pena inicial: Entre 15 e 20 anos",
+      tempo_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Pena inicial: Entre 20 e 30 anos",
+      tempo_pena == "Igual ou superior a 30 anos" ~ "Pena inicial: Igual ou superior a 30 anos"
+    ),
+    tempo_pena = factor(
+      tempo_pena,
+      levels = c(
+        "Pena inicial: Até dois anos",
+        "Pena inicial: Entre 2 e 4 anos",
+        "Pena inicial: Entre 4 e 8 anos",
+        "Pena inicial: Entre 8 e 12 anos",
+        "Pena inicial: Entre 12 e 15 anos",
+        "Pena inicial: Entre 15 e 20 anos",
+        "Pena inicial: Entre 20 e 30 anos",
+        "Pena inicial: Igual ou superior a 30 anos"
+      )
+    ),
+    alteracao_pena = dplyr::case_when(
+      alteracao_pena == "Inferior a 2 anos" ~ "Até 2 anos",
+      alteracao_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Entre 2 e 4 anos",
+      alteracao_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Entre 4 e 8 anos",
+      alteracao_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Entre 8 e 12 anos",
+      alteracao_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Entre 12 e 15 anos",
+      alteracao_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Entre 15 e 20 anos",
+      alteracao_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Entre 20 e 30 anos",
+      alteracao_pena == "Igual ou superior a 30 anos" ~ "Igual ou superior a 30 anos"
+    ),
+    alteracao_pena = factor(
+      alteracao_pena,
+      levels = c(
+        "Até dois anos",
+        "Entre 2 e 4 anos",
+        "Entre 4 e 8 anos",
+        "Entre 8 e 12 anos",
+        "Entre 12 e 15 anos",
+        "Entre 15 e 20 anos",
+        "Entre 20 e 30 anos",
+        "Igual ou superior a 30 anos"
+      )
+    )
+  ) |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  dplyr::filter(decisao_acordao == "Parcialmente provido") |>
+  dplyr::filter(!is.na(alteracao_pena)) |>
+  # dplyr::mutate(
+  #   alteracao_pena = glue::glue("{tempo_pena} -> {alteracao_pena}")
+  # ) |>
+  dplyr::count(tempo_pena, alteracao_pena) |>
+  dplyr::mutate(
+    prop= n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = alteracao_pena, y = n, label = perc) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::facet_wrap(~tempo_pena, scale = "free") +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
+  ggplot2::scale_y_continuous(breaks = c(0,1)) +
+  ggplot2::labs(
+    title = glue::glue("Alteração do tempo de pena em relação ao tempo inicial (N = {n22h_pena})"),
+    x = "Tempo de pena novo",
+    y = "Quantidade de processos"
+  )
+
+p22h_regime <- da |>
+  dplyr::mutate(
+    decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao),
+    regime_inicial = paste0("Regime inicial: ", regime_inicial),
+    regime_inicial = forcats::fct_infreq(regime_inicial),
+    aleracao_regime = forcats::fct_infreq(alteracao_regime)
+  ) |>
+  dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
+  dplyr::filter(decisao_acordao == "Parcialmente provido") |>
+  dplyr::filter(!is.na(alteracao_regime)) |>
+  dplyr::count(regime_inicial, alteracao_regime) |>
+  dplyr::mutate(
+    prop= n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = alteracao_regime, y = n, label = perc) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::facet_wrap(~regime_inicial, scale = "free") +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
+  ggplot2::scale_y_continuous(breaks = c(0,1)) +
+  ggplot2::labs(
+    title = glue::glue("Alteração do regime de pena em relação ao regime inicial (N = {n22h_pena})"),
+    x = "Regime de cumprimento da pena novo",
+    y = "Quantidade de processos"
+  )
+
+p22h <- gridExtra::grid.arrange(p22h_pena, p22h_regime)
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22h.png",
+  p22h, width = 9, height = 6
+)
 
 # 23 – Sentença nulificada: =========================================================================
 # a) Coluna BN: em quantos casos houve sentença nulificada? -----------------------------------------------------------------------
