@@ -629,14 +629,14 @@ p18d <- da18d |>
   ggplot2::geom_vline(xintercept = media_pronuncia_plenario, color = "red", linetype = 2) +
   ggplot2::geom_text(
     ggplot2::aes(
-      label = paste0(media_pronuncia_rese, " dias"),
-      x = media_pronuncia_rese + 70,
+      label = paste0(media_pronuncia_plenario, " dias"),
+      x = media_pronuncia_plenario + 70,
       y = 5.2
     ),
     color = "red"
   ) +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a decisão de pronúncia e a decisão sobre o RESE\n(N = {n_plenario})"),
+    title = glue::glue("Tempo entre a decisão de pronúncia e o plenário\n(N = {n_plenario})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
@@ -655,7 +655,18 @@ n19 <- nrow(da19)
 # a) Coluna AH: qual a distribuição no que diz respeito à natureza da defesa? -----------------------------------------------------------------------
 p19a <- da19 |>
   dplyr::mutate(defesa_inicial = forcats::fct_infreq(defesa_inicial)) |>
-  grafico_base(defesa_inicial) +
+  dplyr::filter(!is.na(defesa_inicial)) |>
+  dplyr::count(defesa_inicial) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = defesa_inicial == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = defesa_inicial, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
     title = glue::glue("Natureza da defesa inicial (N = {n19})"),
     x = "Tipo de defesa",
@@ -726,6 +737,7 @@ ggplot2::ggsave(
 p19d <- da19 |>
   dplyr::mutate(julgamento = forcats::fct_infreq(julgamento)) |>
   grafico_base(julgamento) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
   ggplot2::labs(
     title = glue::glue("Resultados do julgamento (N = {n19})"),
     x = "Resultado do julgamento",
@@ -977,13 +989,24 @@ n_teve_julgamento_recurso <- da |>
   dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
   nrow()
 
-p22e <- da |>
+da22e <- da |>
   dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
   dplyr::select(dt_plenario, dt_acordao) |>
-  dplyr::mutate(tempo_sentenca_acordao = as.numeric(dt_acordao - dt_plenario)) |>
+  dplyr::mutate(tempo_sentenca_acordao = as.numeric(dt_acordao - dt_plenario))
+
+media_sentenca_acordao <- round(mean(da22e$tempo_sentenca_acordao))
+
+p22e <- da22e|>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_sentenca_acordao) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 10) +
+  ggplot2::geom_vline(xintercept = media_sentenca_acordao, color = "red", linetype = 2) +
+  ggplot2::geom_text(
+    ggplot2::aes(label = paste0(media_sentenca_acordao, " dias")),
+    x = 350,
+    y = 5,
+    color = "red"
+  ) +
   ggplot2::labs(
     title = glue::glue("Tempo entre a sentença e o acórdão (N = {n_teve_julgamento_recurso})"),
     x = "Tempo (dias)",
