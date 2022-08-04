@@ -41,3 +41,6 @@ data-raw/breno-empresariais/cjpg/
 cjpg_parsed_clean.rds
 data-raw/prescricao-penal/cjpg_parsed_clean.rds
 data-raw/dano-moral/dados/
+data-raw/recup-judicial/busca/
+data-raw/recup-judicial/metadados/
+data-raw/recup-judicial/dropbox_jtrecenti.rds
