@@ -44,3 +44,5 @@ data-raw/dano-moral/dados/
 data-raw/recup-judicial/busca/
 data-raw/recup-judicial/metadados/
 data-raw/recup-judicial/dropbox_jtrecenti.rds
+data-raw/justica-gratuita/cjpg*
+data-raw/justica-gratuita/decisoes.csv
