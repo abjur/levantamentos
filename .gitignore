@@ -38,3 +38,11 @@ data-raw/vara-barra-funda/dados/
 data-raw/vara-barra-funda/dados2/
 data-raw/vara-barra-funda/codigo/
 data-raw/breno-empresariais/cjpg/
+cjpg_parsed_clean.rds
+data-raw/prescricao-penal/cjpg_parsed_clean.rds
+data-raw/dano-moral/dados/
+data-raw/recup-judicial/busca/
+data-raw/recup-judicial/metadados/
+data-raw/recup-judicial/dropbox_jtrecenti.rds
+data-raw/justica-gratuita/cjpg*
+data-raw/justica-gratuita/decisoes.csv
