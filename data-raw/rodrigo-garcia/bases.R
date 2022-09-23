@@ -1,20 +1,13 @@
 # Rodrigo Garcia
 
-# base rjsp ---------------------------------------------------------------
-# da_rjsp <-
-obsFase2::da_relatorio |>
-  dplyr::glimpse()
 
-# base fsp ----------------------------------------------------------------
-# da_fsp <-
-obsFase3::da_leilao_tidy |>
-  dplyr::glimpse()
+# glossario falencias -----------------------------------------------------
 
-id <- googledrive::as_id("1eTjhSCh0xL8Lg3RjEAcC8rA4e_jHlMW8aPC4GElU46c")
-sheets <- googlesheets4::sheet_names(id)
-aux_glossario <- sheets  |>
+id_f <- googledrive::as_id("1eTjhSCh0xL8Lg3RjEAcC8rA4e_jHlMW8aPC4GElU46c")
+sheets_f <- googlesheets4::sheet_names(id_f)
+aux_glossario <- sheets_f |>
   purrr::set_names() |>
-  purrr::map(~googlesheets4::read_sheet(id, .x))
+  purrr::map(~googlesheets4::read_sheet(id_f, .x))
 
 formatar_glossario <- function(da) {
   da |>
@@ -22,37 +15,48 @@ formatar_glossario <- function(da) {
     dplyr::select("Variável" = nm, "Descrição" = desc)
 }
 
-aux_glossario_format <- aux_glossario |>
+aux_glossario_falencias <- aux_glossario |>
   purrr::map(formatar_glossario)
 
-knitr::kable(
-  aux_glossario_format$processo,
-  caption = "Glossário da base de processos."
+
+
+# glossario recuperações judiciais ----------------------------------------
+
+id_rj <- googledrive::as_id("11bKkt9J5zfMeIYqyvrQHWNl6D3QK-I-H_dD5cp6YTYM")
+sheets_rj <- googlesheets4::sheet_names(id_rj)
+
+aux_glossario_rj <- sheets_rj |>
+  purrr::set_names() |>
+  purrr::map(~googlesheets4::read_sheet(id_rj, .x))
+
+
+# glossarios gerais -------------------------------------------------------
+
+link <- "https://docs.google.com/spreadsheets/d/1PbL2Znau7vLCm8Gqxwep2_cmIBS2c5EAGpZZtmczCVw/edit#gid=0"
+googlesheets4::gs4_auth("rfeliz@abj.org.br")
+
+googlesheets4::write_sheet(
+  aux_glossario_falencias$processo,
+  link,
+  "falencias_processo"
 )
-
-knitr::kable(
-  aux_glossario_format$avaliacao,
-  caption = "Glossário da base de avaliacao"
+googlesheets4::write_sheet(
+  aux_glossario_falencias$avaliacao,
+  link,
+  "falencias_avaliacao"
 )
-
-knitr::kable(
-  aux_glossario_format$leilao,
-  caption = "Glossário da base de leilões"
+googlesheets4::write_sheet(
+  aux_glossario_falencias$leilao,
+  link,
+  "falencias_leilao"
 )
-
-knitr::kable(
-  aux_glossario_format$parte,
-  caption = "Glossário da base de partes"
+googlesheets4::write_sheet(
+  aux_glossario_falencias$parte,
+  link,
+  "falencias_parte"
 )
-
-# base rjsj ---------------------------------------------------------------
-# da_rjrj <-
-obsRJRJ::da_processo_tidy |>
-  dplyr::glimpse()
-
-# base rjrs ---------------------------------------------------------------
-# da_rjrs <-
-obsRJRS::da_processo_tidy |>
-  dplyr::glimpse()
-
-
+googlesheets4::write_sheet(
+  aux_glossario_rj$glossario_pesquisa,
+  link,
+  "recuperacao_processo"
+)
