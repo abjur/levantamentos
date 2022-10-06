@@ -1218,15 +1218,16 @@ da23b |>
   ggplot2::geom_histogram(fill = cores_abj[1])
 
 # (ii) medir o lapso temporal entre a sentença nulificada (coluna BO) e o acórdão que a nulificou (coluna BR); ): -----------------------------------------------------------------------
-  da23b |>
-    dplyr::mutate(
-      tempo_nulificada_acordao = dt_acordao_nulificada - dt_sentenca_nulificada
-    )  |>
-    ggplot2::ggplot() +
-    ggplot2::aes(x = tempo_nulificada_acordao) +
-    ggplot2::geom_histogram(fill = cores_abj[1])
+da23b |>
+  dplyr::mutate(
+    tempo_nulificada_acordao = dt_acordao_nulificada - dt_sentenca_nulificada
+  )  |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_nulificada_acordao) +
+  ggplot2::geom_histogram(fill = cores_abj[1])
 
 # (iii) comparar o tempo de duração total desses processos com sentença nulificada com os processos sem sentença nulificada. -----------------------------------------------------------------------
+
 # (iv) Coluna BP: qual o fundamento para nulificar a sentença? -----------------------------------------------------------------------
 # (v) Coluna BQ: qual Tribunal nulificou a sentença? -----------------------------------------------------------------------
 

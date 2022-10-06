@@ -1,62 +1,173 @@
 # Rodrigo Garcia
 
 
-# glossario falencias -----------------------------------------------------
+# f_sp --------------------------------------------------------------------
+f_sp_processos <- obsFase3::da_processo_tidy |>
+  # dplyr::glimpse()
+  dplyr::select(
+    id_processo,
+    dt_dist,
+    info_foro,
+    dt_decisao,
+    dt_fal_fim,
+    listcred_aj_val,
+    info_leilao,
+    info_leilao_justif,
+    info_ativo_val,
+    info_obrig_extin,
+    aj_tipo_remu,
+    dplyr::contains("pgto")
+  )
 
-id_f <- googledrive::as_id("1eTjhSCh0xL8Lg3RjEAcC8rA4e_jHlMW8aPC4GElU46c")
-sheets_f <- googlesheets4::sheet_names(id_f)
-aux_glossario <- sheets_f |>
-  purrr::set_names() |>
-  purrr::map(~googlesheets4::read_sheet(id_f, .x))
+f_sp_avaliacao <- obsFase3::da_avaliacao_tidy
 
-formatar_glossario <- function(da) {
-  da |>
-    dplyr::filter(incluir == "s") |>
-    dplyr::select("Variável" = nm, "Descrição" = desc)
-}
+f_sp_leilao <- obsFase3::da_leilao_tidy
 
-aux_glossario_falencias <- aux_glossario |>
-  purrr::map(formatar_glossario)
+link_f <- "https://docs.google.com/spreadsheets/d/1nHI8EA_7l0_lD85V_BD8tczv847XHi8qSyz_yUc5RDU/edit#gid=0"
 
-
-
-# glossario recuperações judiciais ----------------------------------------
-
-id_rj <- googledrive::as_id("11bKkt9J5zfMeIYqyvrQHWNl6D3QK-I-H_dD5cp6YTYM")
-sheets_rj <- googlesheets4::sheet_names(id_rj)
-
-aux_glossario_rj <- sheets_rj |>
-  purrr::set_names() |>
-  purrr::map(~googlesheets4::read_sheet(id_rj, .x))
-
-
-# glossarios gerais -------------------------------------------------------
-
-link <- "https://docs.google.com/spreadsheets/d/1PbL2Znau7vLCm8Gqxwep2_cmIBS2c5EAGpZZtmczCVw/edit#gid=0"
-googlesheets4::gs4_auth("rfeliz@abj.org.br")
+# googlesheets4::gs4_auth("rfeliz@abj.org")
 
 googlesheets4::write_sheet(
-  aux_glossario_falencias$processo,
-  link,
-  "falencias_processo"
+  f_sp_avaliacao,
+  link_f,
+  "avaliacao"
 )
+
 googlesheets4::write_sheet(
-  aux_glossario_falencias$avaliacao,
-  link,
-  "falencias_avaliacao"
+  f_sp_leilao,
+  link_f,
+  "leilao"
 )
+
 googlesheets4::write_sheet(
-  aux_glossario_falencias$leilao,
-  link,
-  "falencias_leilao"
+  f_sp_processos,
+  link_f,
+  "processos"
 )
+# rj -------------------------------------------------------------------
+# sp
+rj_sp_processos <- obsFase2::da_relatorio |>
+  # dplyr::glimpse()
+  dplyr::mutate(
+    plano_desfecho = dplyr::case_when(
+      resultado_final == "Aprovação do plano" ~ "O plano foi aprovado",
+      resultado_final == "Ainda em negociação" ~ "Ainda não foi aprovado nem reprovado",
+      cram_down == "Sim" ~ "Cram Down",
+      is.na(resultado_final) ~ "(Vazio)",
+      TRUE ~ "O plano foi reprovado (a empresa/grupo faliu)"
+    ),
+    desfecho_final = dplyr::case_when(
+      is.na(desfecho_final) ~ "(Vazio)",
+      desfecho_final == "Ainda em curso" ~ "Ainda não encerrou o cumprimento do plano",
+      desfecho_final == "Encerramento sem falência" ~ "Cumprimento do plano encerrado",
+      desfecho_final == "Falência" ~ "Faliu cumprindo o plano"
+    )
+  ) |>
+  dplyr::transmute(
+    id_processo = n_processo,
+    data_dist,
+    comarca,
+    capital,
+    requerente_listcred_valor = NA,
+    aj_listcred_valor = NA,
+    aj_remu_valor = NA,
+    remu_divida = NA,
+    plano_desfecho,
+    data_aprovacao,
+    data_concessao,
+    leilao,
+    upi,
+    desfecho_final,
+    data_fim,
+    data_falencia,
+    balanco_unificado = NA,
+    patrimonio_liquido = NA,
+    faturamento = faturamento_total,
+    faixa_faturamento,
+    passivos = total_passivo,
+    faixa_passivo,
+    ativos = total_ativo,
+    faixa_ativo
+  )
+
+
+# rj
+rj_rj_processos <- obsRJRJ::da_processo_tidy |>
+  # dplyr::glimpse()
+  dplyr::transmute(
+    id_processo,
+    data_dist,
+    comarca,
+    capital,
+    requerente_listcred_valor = NA,
+    aj_listcred_valor,
+    aj_remu_valor,
+    remu_divida,
+    plano_desfecho,
+    data_aprovacao,
+    data_concessao,
+    leilao,
+    upi,
+    desfecho_final,
+    data_fim,
+    data_falencia,
+    balanco_unificado,
+    patrimonio_liquido,
+    faturamento,
+    faixa_faturamento,
+    passivos,
+    faixa_passivo,
+    ativos,
+    faixa_ativo
+  )
+
+# rs
+rj_rs_processos <- obsRJRS::da_processo_tidy |>
+  # dplyr::glimpse()
+  dplyr::select(
+    id_processo,
+    data_dist,
+    comarca,
+    capital,
+    requerente_listcred_valor,
+    aj_listcred_valor,
+    aj_remu_valor,
+    remu_divida,
+    plano_desfecho,
+    data_aprovacao,
+    data_concessao,
+    leilao,
+    upi,
+    desfecho_final,
+    data_fim,
+    data_falencia,
+    balanco_unificado,
+    patrimonio_liquido,
+    faturamento,
+    faixa_faturamento,
+    passivos,
+    faixa_passivo,
+    ativos,
+    faixa_ativo
+  )
+
+link_rj <- "https://docs.google.com/spreadsheets/d/1vKBO50eQzb6QH36-g0y4iyYhWk0Fp8EfQyxQo2UemvQ/edit#gid=0"
+
+
 googlesheets4::write_sheet(
-  aux_glossario_falencias$parte,
-  link,
-  "falencias_parte"
+  rj_sp_processos,
+  link_rj,
+  "sp"
 )
+
 googlesheets4::write_sheet(
-  aux_glossario_rj$glossario_pesquisa,
-  link,
-  "recuperacao_processo"
+  rj_rj_processos,
+  link_rj,
+  "rj"
+)
+
+googlesheets4::write_sheet(
+  rj_rs_processos,
+  link_rj,
+  "rs"
 )
