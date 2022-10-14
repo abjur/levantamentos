@@ -1,6 +1,5 @@
 # NEPI 2022 - Thais Hanessaka
 
-
 # bases -------------------------------------------------------------------
 da_processos <- obsFase3::da_processo_tidy |>
   dplyr::filter(info_conv != "(Vazio)" & info_conv != "Outros") |>
