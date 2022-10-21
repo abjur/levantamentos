@@ -849,26 +849,25 @@ ggplot2::ggsave(
 p21a <- da_condenacao |>
   dplyr::mutate(
     tempo_pena = dplyr::case_when(
-      tempo_pena == "Inferior a 2 anos" ~ "Até 2 anos",
-      tempo_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Entre 2 e 4 anos",
-      tempo_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Entre 4 e 8 anos",
-      tempo_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Entre 8 e 12 anos",
-      tempo_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Entre 12 e 15 anos",
-      tempo_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Entre 15 e 20 anos",
-      tempo_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Entre 20 e 30 anos",
-      tempo_pena == "Igual ou superior a 30 anos" ~ "Igual ou superior a 30 anos"
+      tempo_pena == "Inferior a 2 anos" ~ "< 2 anos",
+      tempo_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Maior que 2 anos e menor ou igual a 4 anos",
+      tempo_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Maior que 4 anos e menor ou igual a 8 anos",
+      tempo_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Maior que 8 anos e menor ou igual a 12 anos",
+      tempo_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Maior que 12 anos e menor ou igual a 15 anos",
+      tempo_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Maior que 15 anos e menor ou igual a 20 anos",
+      tempo_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Maior que 20 anos e menor ou igual a 30 anos",
+      tempo_pena == "Igual ou superior a 30 anos" ~ "Maior que 30 anos"
     ),
     tempo_pena = factor(
       tempo_pena,
       levels = c(
-        "Até dois anos",
-        "Entre 2 e 4 anos",
-        "Entre 4 e 8 anos",
-        "Entre 8 e 12 anos",
-        "Entre 12 e 15 anos",
-        "Entre 15 e 20 anos",
-        "Entre 20 e 30 anos",
-        "Igual ou superior a 30 anos"
+        "Maior que 2 anos e menor ou igual a 4 anos",
+        "Maior que 4 anos e menor ou igual a 8 anos",
+        "Maior que 8 anos e menor ou igual a 12 anos",
+        "Maior que 12 anos e menor ou igual a 15 anos",
+        "Maior que 15 anos e menor ou igual a 20 anos",
+        "Maior que 20 anos e menor ou igual a 30 anos",
+        "Maior que 30 anos"
       )
     )
   ) |>
@@ -1090,58 +1089,53 @@ p22h_pena <- da |>
   dplyr::mutate(
     decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao),
     tempo_pena = dplyr::case_when(
-      tempo_pena == "Inferior a 2 anos" ~ "Pena inicial: Até 2 anos",
-      tempo_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Pena inicial: Entre 2 e 4 anos",
-      tempo_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Pena inicial: Entre 4 e 8 anos",
-      tempo_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Pena inicial: Entre 8 e 12 anos",
-      tempo_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Pena inicial: Entre 12 e 15 anos",
-      tempo_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Pena inicial: Entre 15 e 20 anos",
-      tempo_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Pena inicial: Entre 20 e 30 anos",
-      tempo_pena == "Igual ou superior a 30 anos" ~ "Pena inicial: Igual ou superior a 30 anos"
+      tempo_pena == "Inferior a 2 anos" ~ "Pena inicial: < 2 anos",
+      tempo_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Pena inicial: Maior que 2 anos e menor ou igual a 4 anos",
+      tempo_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Pena inicial: Maior que 4 anos e menor ou igual a 8 anos",
+      tempo_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Pena inicial: Maior que 8 anos e menor ou igual a 12 anos",
+      tempo_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Pena inicial: Maior que 12 anos e menor ou igual a 15 anos",
+      tempo_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Pena inicial: Maior que 15 anos e menor ou igual a 20 anos",
+      tempo_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Pena inicial: Maior que 20 anos e menor ou igual a 30 anos",
+      tempo_pena == "Igual ou superior a 30 anos" ~ "Pena inicial: Maior que 30 anos"
     ),
     tempo_pena = factor(
       tempo_pena,
       levels = c(
-        "Pena inicial: Até dois anos",
-        "Pena inicial: Entre 2 e 4 anos",
-        "Pena inicial: Entre 4 e 8 anos",
-        "Pena inicial: Entre 8 e 12 anos",
-        "Pena inicial: Entre 12 e 15 anos",
-        "Pena inicial: Entre 15 e 20 anos",
-        "Pena inicial: Entre 20 e 30 anos",
-        "Pena inicial: Igual ou superior a 30 anos"
+        "Pena inicial: Maior que 2 anos e menor ou igual a 4 anos",
+        "Pena inicial: Maior que 4 anos e menor ou igual a 8 anos",
+        "Pena inicial: Maior que 8 anos e menor ou igual a 12 anos",
+        "Pena inicial: Maior que 12 anos e menor ou igual a 15 anos",
+        "Pena inicial: Maior que 15 anos e menor ou igual a 20 anos",
+        "Pena inicial: Maior que 20 anos e menor ou igual a 30 anos",
+        "Pena inicial: Maior que 30 anos"
       )
     ),
     alteracao_pena = dplyr::case_when(
-      alteracao_pena == "Inferior a 2 anos" ~ "Até 2 anos",
-      alteracao_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Entre 2 e 4 anos",
-      alteracao_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Entre 4 e 8 anos",
-      alteracao_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Entre 8 e 12 anos",
-      alteracao_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Entre 12 e 15 anos",
-      alteracao_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Entre 15 e 20 anos",
-      alteracao_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Entre 20 e 30 anos",
-      alteracao_pena == "Igual ou superior a 30 anos" ~ "Igual ou superior a 30 anos"
+      alteracao_pena == "Inferior a 2 anos" ~ "< 2 anos",
+      alteracao_pena == "Igual a 2 anos e que não exceda 4 anos" ~ "Maior que 2 anos e menor ou igual a 4 anos",
+      alteracao_pena == "Superior a 4 anos e que não exceda 8 anos" ~ "Maior que 4 anos e menor ou igual a 8 anos",
+      alteracao_pena == "Superior a 8 anos e inferior a 12 anos" ~ "Maior que 8 anos e menor ou igual a 12 anos",
+      alteracao_pena == "Igual a 12 anos e inferior a 15 anos" ~ "Maior que 12 anos e menor ou igual a 15 anos",
+      alteracao_pena == "Igual a 15 anos e inferior a 20 anos" ~ "Maior que 15 anos e menor ou igual a 20 anos",
+      alteracao_pena == "Igual a 20 anos e inferior a 30 anos" ~ "Maior que 20 anos e menor ou igual a 30 anos",
+      alteracao_pena == "Igual ou superior a 30 anos" ~ "Maior que 30 anos"
     ),
     alteracao_pena = factor(
       alteracao_pena,
       levels = c(
-        "Até dois anos",
-        "Entre 2 e 4 anos",
-        "Entre 4 e 8 anos",
-        "Entre 8 e 12 anos",
-        "Entre 12 e 15 anos",
-        "Entre 15 e 20 anos",
-        "Entre 20 e 30 anos",
-        "Igual ou superior a 30 anos"
+        "Maior que 2 anos e menor ou igual a 4 anos",
+        "Maior que 4 anos e menor ou igual a 8 anos",
+        "Maior que 8 anos e menor ou igual a 12 anos",
+        "Maior que 12 anos e menor ou igual a 15 anos",
+        "Maior que 15 anos e menor ou igual a 20 anos",
+        "Maior que 20 anos e menor ou igual a 30 anos",
+        "Maior que 30 anos"
       )
     )
   ) |>
   dplyr::filter(recurso_ja_foi_julgado == "Sim") |>
   dplyr::filter(decisao_acordao == "Parcialmente provido") |>
   dplyr::filter(!is.na(alteracao_pena)) |>
-  # dplyr::mutate(
-  #   alteracao_pena = glue::glue("{tempo_pena} -> {alteracao_pena}")
-  # ) |>
   dplyr::count(tempo_pena, alteracao_pena) |>
   dplyr::mutate(
     prop= n/sum(n),
@@ -1195,21 +1189,446 @@ ggplot2::ggsave(
 
 # 23 – Sentença nulificada: =========================================================================
 # a) Coluna BN: em quantos casos houve sentença nulificada? -----------------------------------------------------------------------
-# b) Nos casos em que houve sentença nulificada (resposta “sim” na coluna BN): -----------------------------------------------------------------------
-# (i) Coluna BO: medir o lapso temporal entre a sentença nulificada (coluna BO) e a sentença atual (coluna N); medir o lapso temporal entre a sentença nulificada (coluna BO) e o acórdão que a nulificou (coluna BR); comparar o tempo de duração total desses processos com sentença nulificada com os processos sem sentença nulificada. -----------------------------------------------------------------------
-# (ii) Coluna BP: qual o fundamento para nulificar a sentença? -----------------------------------------------------------------------
-# (iii) Coluna BQ: qual Tribunal nulificou a sentença? -----------------------------------------------------------------------
+p23a <- da |>
+  grafico_base(sentenca_nulificada) +
+  ggplot2::labs(
+    title = glue::glue("Sentenças nulificadas (N = {nrow(da)})"),
+    x = "A sentença foi nulificada?",
+    y = "Quantidade de processos"
+  )
 
-# 24 – Colunas F, I, J, K, L, M, N: =========================================================================
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p23a.png",
+  p23a, width = 7, height = 6
+)
+
+# b) Nos casos em que houve sentença nulificada (resposta “sim” na coluna BN): -----------------------------------------------------------------------
+da23b <- da |>
+  dplyr::filter(sentenca_nulificada == "Sim")
+
+n23b <- nrow(da23b)
+
+# (i) Coluna BO: medir o lapso temporal entre a sentença nulificada (coluna BO) e a sentença atual (coluna N); ): -----------------------------------------------------------------------
+da23b |>
+  dplyr::mutate(
+    tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_sentenca_nulificada) +
+  ggplot2::geom_histogram(fill = cores_abj[1])
+
+# (ii) medir o lapso temporal entre a sentença nulificada (coluna BO) e o acórdão que a nulificou (coluna BR); ): -----------------------------------------------------------------------
+da23b |>
+  dplyr::mutate(
+    tempo_nulificada_acordao = dt_acordao_nulificada - dt_sentenca_nulificada
+  )  |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_nulificada_acordao) +
+  ggplot2::geom_histogram(fill = cores_abj[1])
+
+# (iii) comparar o tempo de duração total desses processos com sentença nulificada com os processos sem sentença nulificada. -----------------------------------------------------------------------
+
+# (iv) Coluna BP: qual o fundamento para nulificar a sentença? -----------------------------------------------------------------------
+# (v) Coluna BQ: qual Tribunal nulificou a sentença? -----------------------------------------------------------------------
+
+# 24 – Colunas F, I, J, K, L, M, N (esperando resolver os tempos negativos): =========================================================================
 # a) Tempo de duração total do processo (do fato até a sentença) -----------------------------------------------------------------------
-# b) Tempo entre os marcos temporais: data do fato até instauração do IP; instauração do IP até distribuição do processo; distribuição do processo até denúncia; denúncia até seu recebimento; do recebimento até a pronúncia; do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou extinção da punibilidade; da pronúncia até a sentença após plenário -----------------------------------------------------------------------
+da24a <- da |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_plenario - dt_fato)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24a <- nrow(da24a)
+
+media_24a <- round(mean(da24a$tempo, na.rm = TRUE))
+
+da24a |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24a, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24a, " dias"), x = media_24a + 130, y = 7.5), color = "red") +
+  ggplot2::scale_y_continuous(breaks = c(1:10)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo de duração do total do processo (N = {n24a})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# b) data do fato até instauração do IP;  -----------------------------------------------------------------------
+da24b <- da |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_ip - dt_fato)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24b <- nrow(da24b)
+
+media_24b <- round(mean(da24b$tempo))
+
+da24b |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24b, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24b, " dias"), x = 20, y = 13), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre o fato e a instauração do inquérito policial (N = {n24b})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# c) instauração do IP até distribuição do processo;  -----------------------------------------------------------------------
+da24c <- da |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_dist - dt_ip)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24c <- nrow(da24c)
+
+media_24c <- round(mean(da24c$tempo))
+
+da24c |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24c, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24c, " dias"), x = 90, y = 30), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a instauração do inquérito policial e a distribuição do processo (N = {n24c})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# d) distribuição do processo até denúncia;  -----------------------------------------------------------------------
+da24d <- da |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_denuncia - dt_dist)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24d <- nrow(da24d)
+
+media_24d <- round(mean(da24d$tempo))
+
+da24d |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24d, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24d, " dias"), x = 530, y = 15), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a distribuição do processo e a denúncia (N = {n24d})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# e) denúncia até seu recebimento;  -----------------------------------------------------------------------
+da24e <- da |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_recebimento_denuncia - dt_denuncia)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24e <- nrow(da24e)
+
+media_24e <- round(mean(da24e$tempo))
+
+da24e |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24e, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24e, " dias"), x = 25, y = 40), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a denúncia e o seu recebimento (N = {n24e})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# f) do recebimento até a pronúncia;  -----------------------------------------------------------------------
+da24f <- da |>
+  dplyr::filter(natureza_decisao == "\"Sentença\" de pronúncia") |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_pronuncia - dt_recebimento_denuncia)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24f <- nrow(da24f)
+
+media_24f <- round(mean(da24f$tempo))
+
+da24f |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 100) +
+  ggplot2::geom_vline(xintercept = media_24f, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24f, " dias"), x = 500, y = 3.5), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de pronúncia (N = {n24f})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# g) do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou extinção da punibilidade;  -----------------------------------------------------------------------
+da24g <- da |>
+  dplyr::filter(
+    natureza_decisao != "\"Sentença\" de pronúncia",
+    natureza_decisao != "Sentença após plenário do júri"
+  ) |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_pronuncia - dt_recebimento_denuncia)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24g <- nrow(da24g)
+
+media_24g <- round(mean(da24g$tempo))
+
+da24g |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
+  ggplot2::geom_vline(xintercept = media_24g, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 530, y = 1.8), color = "red") +
+  ggplot2::scale_y_continuous(breaks = c(0:2)) +
+  ggplot2::scale_x_continuous(breaks = c(0:12)*100) +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de impronúncia, desclassificaçãona primeira fase, absolvição sumária\nou extinção da punibilidade (N = {n24f})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+# h) da pronúncia até a sentença após plenário -----------------------------------------------------------------------
+da24h <- da |>
+  dplyr::filter(natureza_decisao == "Sentença após plenário do júri") |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_pronuncia - dt_recebimento_denuncia)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n24h <- nrow(da24h)
+
+media_24h <- round(mean(da24h$tempo))
+
+da24h |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24h, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24h, " dias"), x = 440, y = 7), color = "red") +
+  ggplot2::scale_y_continuous(breaks = c(0:9)) +
+  ggplot2::scale_x_continuous(breaks = c(0:12)*100) +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a denúncia e a sentença após plenário (N = {n24g})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
 
 # 25 – Colunas O, P e Q: para os processos que foram suspensos com base no art. 366 (resposta “sim” na coluna O), qual o intervalo de duração entre a coluna P (data da suspensão) e a coluna Q (data da revogação da suspensão) =========================================================================
+da25 <- da |>
+  dplyr::filter(suspensao == "Sim") |>
+  dplyr::mutate(
+    tempo = dt_revogacao_suspensao - dt_suspensao
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n25 <- nrow(da25)
+
+media_25 <- round(mean(da25$tempo))
+
+da25 |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
+  ggplot2::geom_vline(xintercept = media_25, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_25, " dias"), x = 400, y = 3.3), color = "red") +
+  ggplot2::scale_y_continuous(breaks = c(0:9)) +
+  ggplot2::scale_x_continuous(breaks = c(0, 100, 200, 300, 400, 500, 600, 700, 1000, 1500, 2000)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo de suspensão (N = {n25})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
 
 # 26 – Colunas R e S + AM e NA + AY e AZ: =========================================================================
+da26 <- da |>
+  dplyr::select(
+    id_processo,
+    denuncia_homicidio,
+    denuncia_qualificadoras,
+    pronuncia_homicidio,
+    pronuncia_qualificadoras,
+    plenario_homicidio,
+    plenario_qualificadoras
+  )
+
 # a) Primeiro, medir quantos casos são homicídios simples em cada um desses momentos (denúncia – pronúncia – sentença) =========================================================================
+n26a <- da26 |>
+  dplyr::summarise(
+    n_denuncia = sum(!is.na(denuncia_homicidio)),
+    n_pronuncia = sum(!is.na(pronuncia_homicidio)),
+    n_plenario = sum(!is.na(plenario_homicidio))
+  )
+
+p26a_denuncia <- da26 |>
+  grafico_base(denuncia_homicidio) +
+  ggplot2::labs(
+    title = glue::glue("Homicídios simples na denúncia (N = {n26a[[1]][1]})"),
+    x = "É homicídio simples?",
+    y = "Quantidade de processos"
+  )
+
+p26a_pronuncia <- da26 |>
+  grafico_base(pronuncia_homicidio) +
+  ggplot2::labs(
+    title = glue::glue("Homicídios simples na pronúncia (N = {n26a[[2]][1]})"),
+    x = "É homicídio simples?",
+    y = "Quantidade de processos"
+  )
+
+p26a_plenario <- da26 |>
+  grafico_base(plenario_homicidio) +
+  ggplot2::labs(
+    title = glue::glue("Homicídios simples no plenário (N = {n26a[[3]][1]})"),
+    x = "É homicídio simples?",
+    y = "Quantidade de processos"
+  )
+
+p26a <-  gridExtra::grid.arrange(p26a_denuncia, p26a_pronuncia, p26a_plenario,
+                                nrow = 1)
+
 # b) Se for qualificado, qual o grau de incidência de cada qualificadora -----------------------------------------------------------------------
+da26b <- da26 |>
+  dplyr::select(
+    id_processo,
+    dplyr::contains("_qualificadoras")
+  ) |>
+  tidyr::separate_rows(denuncia_qualificadoras, sep = "., Art. ") |>
+  tidyr::separate_rows(pronuncia_qualificadoras, sep = "., Art. ") |>
+  tidyr::separate_rows(plenario_qualificadoras, sep = "., Art. ") |>
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~stringr::str_remove_all(.x, "Art. |\\.")
+    ),
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~paste0("Art. ", .x)
+    ),
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~dplyr::case_when(
+        .x == "Art. NA" | .x == "Art. N/A" ~ NA_character_,
+        TRUE ~ .x
+      )
+    )
+  ) |>
+  tidyr::pivot_longer(
+    cols = dplyr::contains("_qualificadoras"),
+    values_to = "qualificadoras"
+  ) |>
+  dplyr::transmute(
+    id_processo,
+    tipo = stringr::str_remove(name, "_qualificadoras"),
+    tipo = stringr::str_to_sentence(tipo),
+    tipo = factor(
+      tipo,
+      levels = c(
+        "Denuncia",
+        "Pronuncia",
+        "Plenario"
+      )
+    ),
+    qualificadoras = factor(
+      qualificadoras,
+      levels = c(
+        "Art. 121, §2º, I",
+        "Art. 121, §2º, II",
+        "Art. 121, §2º, III",
+        "Art. 121, §2º, IV",
+        "Art. 121, §2º, V",
+        "Art. 121, §2º, VI",
+        "Art. 121, §2º, VII"
+      )
+    )
+  )
+
+n26b <- da26b |>
+  dplyr::distinct(id_processo, tipo) |>
+  nrow()
+
+p26b <- da26b |>
+  dplyr::filter(!is.na(qualificadoras)) |>
+  dplyr::count(tipo, qualificadoras) |>
+  dplyr::group_by(tipo) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = qualificadoras, y = n, fill = tipo, label = perc) +
+  ggplot2::geom_col(position = "dodge", show.legend = FALSE) +
+  ggplot2::geom_label(
+    ggplot2::aes(group = tipo), fill = "white",
+    position = ggplot2::position_dodge(width = .9)
+  ) +
+  ggplot2::scale_fill_viridis_d(begin = .2, end = .8, direction = 1) +
+  ggplot2::facet_grid(tipo~.) +
+  ggplot2::labs(
+    title = glue::glue("Incidência de qualificadoras nas três fases do processo: Denúncia, Pronúncia e Plenário (N = {n26b})"),
+    x = "Qualificadoras",
+    y = "Quantidade de processos"
+  )
+
+
 # c) Por fim, verificar como o enquadramento típico evoluiu ao longo desses três momentos processuais. Na prática, comparar os resultados das perguntas “a” e “b” acima revelarão isso. No entanto, a comparação completa só fará sentido nos casos em que houve denúncia, pronúncia e plenário, devendo ser isolados os casos em que houve denúncia, mas não pronúncia e os casos em que houve pronúncia mas ainda não houve plenário. -----------------------------------------------------------------------
+da26c <- da26 |>
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~dplyr::case_when(
+        .x == "N/A" ~ NA_character_,
+        TRUE ~ .x
+      )
+    )
+  ) |>
+  dplyr::filter(
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~!is.na(.x)
+    ),
+    dplyr::across(
+      dplyr::contains("_homicidio"),
+      ~!is.na(.x)
+    )
+  ) |>
+  tidyr::separate_rows(denuncia_qualificadoras, sep = "., Art. ") |>
+  tidyr::separate_rows(pronuncia_qualificadoras, sep = "., Art. ") |>
+  dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
+  tidyr::separate_rows(plenario_qualificadoras, sep = "., Art. ") |>
+  # dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~stringr::str_remove_all(.x, "Art. |\\.")
+    ),
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~paste0("Art. ", .x)
+    ),
+    dplyr::across(
+      dplyr::contains("_qualificadoras"),
+      ~dplyr::case_when(
+        .x == "Art. NA" | .x == "Art. N/A" ~ NA_character_,
+        TRUE ~ .x
+      )
+    )
+  )
+
 
 # 27 – Colunas V, W, X, Y e Z (perguntas sobre prisão provisória): =========================================================================
 # a) Em quantos casos houve flagrante (coluna V) -----------------------------------------------------------------------
