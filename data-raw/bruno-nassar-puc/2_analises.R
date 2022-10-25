@@ -131,7 +131,10 @@ p06 <- da |>
     col_dif = concurso_menor == "Não consta"
   ) |>
   dplyr::arrange(desc(n)) |>
-  dplyr::mutate(concurso_menor = forcats::fct_inorder(concurso_menor)) |>
+  dplyr::mutate(
+    concurso_menor = forcats::fct_inorder(concurso_menor),
+    concurso_menor = forcats::fct_relevel(concurso_menor, "Não consta", after=Inf)
+  ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = concurso_menor, y = n, label = glue::glue("{n} casos\n({perc})")) +
   ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
@@ -160,7 +163,6 @@ p07 <- da |>
   ggplot2::aes(x = n_reus_julgados, y = n, label = perc) +
   ggplot2::geom_col(fill = cores_abj[1]) +
   ggplot2::geom_label() +
-  ggplot2::scale_x_continuous(breaks = c(1,2)) +
   ggplot2::labs(
     title = "Distribuição da quantidade de réus julgados por processo",
     x = "Número de réus julgados",
@@ -244,7 +246,8 @@ p09 <- da |>
     prop = n/sum(n),
     perc = formattable::percent(prop),
     col_dif = cor_reus_julgados == "Não consta",
-    cor_reus_julgados = forcats::fct_inorder(cor_reus_julgados)
+    cor_reus_julgados = forcats::fct_inorder(cor_reus_julgados),
+    cor_reus_julgados = forcats::fct_relevel(cor_reus_julgados, "Não consta", after=Inf)
   ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = cor_reus_julgados, y = n, label = perc) +
@@ -420,8 +423,22 @@ ggplot2::ggsave(
 
 # 13 – Coluna AG - qual a distribuição no que diz respeito à delegacia que desenvolveu o IP? =========================================================================
 p13 <- da |>
-  dplyr::mutate(agente_ip = forcats::fct_infreq(agente_ip)) |>
-  grafico_base(agente_ip) +
+  dplyr::filter(!is.na(agente_ip)) |>
+  dplyr::mutate(
+    agente_ip = forcats::fct_infreq(agente_ip),
+    agente_ip = forcats::fct_relevel(agente_ip, "Não consta", after=Inf)
+  ) |>
+  dplyr::count(agente_ip) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = agente_ip == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = agente_ip, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
     x = "Delegacia que desenvolveu o Inquérito Policial",
     y = "Quantidade de processos"
@@ -709,7 +726,10 @@ ggplot2::ggsave(
 
 # c) Coluna AS: em quantos casos houve assistente de acusação colaborando em plenário? -----------------------------------------------------------------------
 p19c <- da19 |>
-  dplyr::mutate(assistente_de_acusacao = forcats::fct_infreq(assistente_de_acusacao)) |>
+  dplyr::mutate(
+    assistente_de_acusacao = forcats::fct_infreq(assistente_de_acusacao),
+    assistente_de_acusacao = forcats::fct_relevel(assistente_de_acusacao, "Não consta", after=Inf)
+  ) |>
   dplyr::filter(!is.na(assistente_de_acusacao)) |>
   dplyr::count(assistente_de_acusacao) |>
   dplyr::mutate(
@@ -944,13 +964,28 @@ n_teve_recurso <- da |>
   nrow()
 
 p22c <- da |>
-  dplyr::mutate(quem_interpos_recurso = forcats::fct_infreq(quem_interpos_recurso)) |>
-  grafico_base(quem_interpos_recurso) +
+  dplyr::mutate(
+    quem_interpos_recurso = forcats::fct_infreq(quem_interpos_recurso),
+    quem_interpos_recurso = forcats::fct_relevel(quem_interpos_recurso, "Não consta", after=Inf)
+  ) |>
+  dplyr::filter(!is.na(quem_interpos_recurso)) |>
+  dplyr::count(quem_interpos_recurso) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = quem_interpos_recurso == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = quem_interpos_recurso, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
     title = glue::glue("Polo que interpôs recurso (N = {n_teve_recurso})"),
     x = "Quem interpôs recurso",
     y = "Quantidade de processos"
   )
+
 
 ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p22c.png",
@@ -1022,16 +1057,22 @@ p22f <- da |>
   dplyr::mutate(
     decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao)
   ) |>
-  dplyr::mutate(decisao_acordao = forcats::fct_infreq(decisao_acordao)) |>
+  dplyr::mutate(
+    decisao_acordao = ifelse(is.na(decisao_acordao), "Não consta", decisao_acordao),
+    decisao_acordao = forcats::fct_infreq(decisao_acordao),
+    decisao_acordao = forcats::fct_relevel(decisao_acordao, "Não consta", after=Inf)
+  ) |>
   dplyr::count(decisao_acordao) |>
   dplyr::mutate(
     prop = n/sum(n),
-    perc = formattable::percent(prop)
+    perc = formattable::percent(prop),
+    col_dif = decisao_acordao == "Não consta"
   ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = decisao_acordao, y = n, label = perc) +
-  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
   ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
   ggplot2::labs(
     title = glue::glue("Resultado dos acórdãos (N = {n_teve_julgamento_recurso})"),
     x = "Resultado do acórdão",
@@ -1153,6 +1194,11 @@ p22h_pena <- da |>
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p22h_pena.png",
+  p22h_pena, width = 12, height = 5
+)
+
 p22h_regime <- da |>
   dplyr::mutate(
     decisao_acordao = ifelse(decisao_acordao == "Parcialmente improvido", "Parcialmente provido", decisao_acordao),
@@ -1180,11 +1226,9 @@ p22h_regime <- da |>
     y = "Quantidade de processos"
   )
 
-p22h <- gridExtra::grid.arrange(p22h_pena, p22h_regime)
-
 ggplot2::ggsave(
-  "data-raw/bruno-nassar-puc/img/p22h.png",
-  p22h, width = 9, height = 6
+  "data-raw/bruno-nassar-puc/img/p22h_regime.png",
+  p22h_regime, width = 9, height = 6
 )
 
 # 23 – Sentença nulificada: =========================================================================
