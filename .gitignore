@@ -46,3 +46,9 @@ data-raw/recup-judicial/metadados/
 data-raw/recup-judicial/dropbox_jtrecenti.rds
 data-raw/justica-gratuita/cjpg*
 data-raw/justica-gratuita/decisoes.csv
+data-raw/bancos-cnpj/cpopg/
+data-raw/justica-gratuita/decisoes_indef.csv
+data-raw/justica-gratuita/decisoes_total.csv
+data-raw/justica-gratuita/decisoes.csv
+data-raw/justica-gratuita/dados/
+data-raw/pericia-papiloscopica/tjsp_cjpg/
