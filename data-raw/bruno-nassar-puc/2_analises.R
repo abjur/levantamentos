@@ -1257,6 +1257,25 @@ da23b |>
   dplyr::mutate(
     tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
   ) |>
+  dplyr::select(
+    id_processo,
+    dt_plenario,
+    dt_sentenca_nulificada,
+    tempo_sentenca_nulificada
+  ) |>
+  knitr::kable(
+    caption="Lapso temporal entre a sentença nulificada e a sentença atual",
+    col.names=c(
+      "Número do processo",
+      "Data da sentença nulificada",
+      "Data da sentença atual",
+      "Tempo entre as sentenças")
+  )
+
+da23b |>
+  dplyr::mutate(
+    tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
+  ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_sentenca_nulificada) +
   ggplot2::geom_histogram(fill = cores_abj[1])
