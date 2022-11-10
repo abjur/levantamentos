@@ -2,6 +2,7 @@
 
 da <- obsFase3::da_processo_tidy |>
   dplyr::select(
+    id_processo,
     info_conv,
     info_autofal,
     dt_decisao,

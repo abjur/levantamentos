@@ -36,3 +36,25 @@ da <- obsFase3::da_processo_tidy |>
   dplyr::arrange(tempo)
 
 writexl::write_xlsx(da, "data-raw/nepi_2022/xlsx/da_tempos_tatiana.xlsx")
+
+
+# comparação com o artigo do Marcelo --------------------------------------
+
+obsoc::da_processo_tidy |>
+  dplyr::mutate(
+    apur_haver = decisao_geral == "Apuração de haveres"
+  ) |>
+  dplyr::count(apur_haver) |>
+  dplyr::mutate(
+    prop = n/sum(n)
+  )
+
+obsoc::da_processo_tidy |>
+  dplyr::filter(stringr::str_detect(assunto_contrapedido, stringr::regex("apuração de haveres", TRUE))) |>
+  dplyr::mutate(
+    decisao_apur_haver = stringr::str_detect(decisao_sentenca, stringr::regex("apuração de haveres", TRUE))
+  ) |>
+  dplyr::count(decisao_apur_haver) |>
+  dplyr::mutate(
+    prop = n/sum(n)
+  )
