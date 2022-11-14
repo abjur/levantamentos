@@ -1253,7 +1253,7 @@ da23b <- da |>
 n23b <- nrow(da23b)
 
 # (i) Coluna BO: medir o lapso temporal entre a sentença nulificada (coluna BO) e a sentença atual (coluna N); ): -----------------------------------------------------------------------
-da23b |>
+p23bi <- da23b |>
   dplyr::mutate(
     tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
   ) |>
@@ -1263,36 +1263,110 @@ da23b |>
     dt_sentenca_nulificada,
     tempo_sentenca_nulificada
   ) |>
-  knitr::kable(
-    caption="Lapso temporal entre a sentença nulificada e a sentença atual",
-    col.names=c(
-      "Número do processo",
-      "Data da sentença nulificada",
-      "Data da sentença atual",
-      "Tempo entre as sentenças")
-  )
-
-da23b |>
-  dplyr::mutate(
-    tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
-  ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_sentenca_nulificada) +
-  ggplot2::geom_histogram(fill = cores_abj[1])
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::scale_fill_manual(values=c(0, 1), breaks=c(0,1)) +
+  ggplot2::labs(
+    title = "Lapso temporal entre a sentença nulificada e a sentença atual",
+    x = "Tempo",
+    y = "Contagem de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p23bi.png",
+  p23bi, width = 10, height = 5
+)
 
 # (ii) medir o lapso temporal entre a sentença nulificada (coluna BO) e o acórdão que a nulificou (coluna BR); ): -----------------------------------------------------------------------
-da23b |>
+p23bii <- da23b |>
   dplyr::mutate(
     tempo_nulificada_acordao = dt_acordao_nulificada - dt_sentenca_nulificada
   )  |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_nulificada_acordao) +
-  ggplot2::geom_histogram(fill = cores_abj[1])
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::labs(
+    title = "Lapso temporal entre a sentença nulificada e o acórdão que a nulificou",
+    x = "Tempo",
+    y = "Contagem de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p23bii.png",
+  p23bii, width = 10, height = 5
+)
 
 # (iii) comparar o tempo de duração total desses processos com sentença nulificada com os processos sem sentença nulificada. -----------------------------------------------------------------------
+da23biii <- da |>
+  dplyr::filter(!is.na(sentenca_nulificada)) |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_plenario - dt_fato)
+  ) |>
+  dplyr::filter(tempo > 0)
+
+n_23biii <- nrow(da23biii)
+media_23biii <- da23biii |>
+  dplyr::group_by(sentenca_nulificada) |>
+  dplyr::summarise(
+    n = dplyr::n(),
+    media = round(mean(tempo))
+  ) |>
+  dplyr::ungroup()
+
+p23biii <- da23biii |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo, fill = sentenca_nulificada) +
+  ggplot2::geom_histogram() +
+  ggplot2::facet_wrap(.~sentenca_nulificada) +
+  ggplot2::geom_vline(data=dplyr::filter(media_23biii, sentenca_nulificada=="Não"), ggplot2::aes(xintercept=media), color='red', linetype = 2) +
+  ggplot2::geom_text(data=dplyr::filter(media_23biii, sentenca_nulificada=="Não"), ggplot2::aes(label=paste0(media, " dias"), x=(media+1000), y=15), color='red') +
+  ggplot2::geom_vline(data=dplyr::filter(media_23biii, sentenca_nulificada=="Sim"), ggplot2::aes(xintercept=media), color='red', linetype = 2) +
+  ggplot2::geom_text(data=dplyr::filter(media_23biii, sentenca_nulificada=="Sim"), ggplot2::aes(label=paste0(media, " dias"), x=(media+1000), y=3), color='red') +
+  ggplot2::scale_fill_manual("Houve sentença\nnulificada?", values = cores_abj) +
+  ggplot2::labs(
+    title = glue::glue("Comparação do tempo total dos processos com e sem sentença nulificada (N = {n_23biii})"),
+    x = "Quantidade de casos",
+    y = "Tempo total do processo (em dias)"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p23biii.png",
+  p23biii, width = 10, height = 5
+)
+
+# media_23biii |>
+#   knitr::kable(
+#     format = "html",
+#     caption = "Média das sentenças nulificadas",
+#     col.names = c("Houve sentença nulificada?", "Quantidade de casos", "Média")
+#   ) |>
+#   kableExtra::save_kable("data-raw/bruno-nassar-puc/img/t23biii.png")
 
 # (iv) Coluna BP: qual o fundamento para nulificar a sentença? -----------------------------------------------------------------------
+p23biv <- da23b |>
+  grafico_base(fundamento_68) +
+  ggplot2::labs(
+    x = "Fundamento para nulificar a sentença",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p23biv.png",
+  p23biv, width = 7, height = 6
+)
 # (v) Coluna BQ: qual Tribunal nulificou a sentença? -----------------------------------------------------------------------
+p23bv <- da23b |>
+  grafico_base(tribunal_sentenca_nulificada) +
+  ggplot2::labs(
+    x = "Tribunal que nulificou a sentença",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p23bv.png",
+  p23bv, width = 7, height = 6
+)
 
 # 24 – Colunas F, I, J, K, L, M, N (esperando resolver os tempos negativos): =========================================================================
 # a) Tempo de duração total do processo (do fato até a sentença) -----------------------------------------------------------------------
@@ -1306,18 +1380,23 @@ n24a <- nrow(da24a)
 
 media_24a <- round(mean(da24a$tempo, na.rm = TRUE))
 
-da24a |>
+p24a <- da24a |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1]) +
   ggplot2::geom_vline(xintercept = media_24a, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24a, " dias"), x = media_24a + 130, y = 7.5), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24a, " dias"), x = media_24a + 500, y = 7.5), color = "red") +
   ggplot2::scale_y_continuous(breaks = c(1:10)) +
   ggplot2::labs(
-    title = glue::glue("Tempo de duração do total do processo (N = {n24a})"),
+    title = glue::glue("Tempo de duração do total do processo, isto é, do fato até a sentença (N = {n24a})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24a.png",
+  p24a, width = 10, height = 5
+)
 
 # b) data do fato até instauração do IP;  -----------------------------------------------------------------------
 da24b <- da |>
@@ -1330,17 +1409,22 @@ n24b <- nrow(da24b)
 
 media_24b <- round(mean(da24b$tempo))
 
-da24b |>
+p24b <- da24b |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1]) +
   ggplot2::geom_vline(xintercept = media_24b, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24b, " dias"), x = 20, y = 13), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24b, " dias"), x = 90, y = 35), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo entre o fato e a instauração do inquérito policial (N = {n24b})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24b.png",
+  p24b, width = 10, height = 5
+)
 
 # c) instauração do IP até distribuição do processo;  -----------------------------------------------------------------------
 da24c <- da |>
@@ -1353,17 +1437,22 @@ n24c <- nrow(da24c)
 
 media_24c <- round(mean(da24c$tempo))
 
-da24c |>
+p24c <- da24c |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1]) +
   ggplot2::geom_vline(xintercept = media_24c, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24c, " dias"), x = 90, y = 30), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24c, " dias"), x = 120, y = 30), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo entre a instauração do inquérito policial e a distribuição do processo (N = {n24c})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24c.png",
+  p24c, width = 10, height = 5
+)
 
 # d) distribuição do processo até denúncia;  -----------------------------------------------------------------------
 da24d <- da |>
@@ -1376,17 +1465,22 @@ n24d <- nrow(da24d)
 
 media_24d <- round(mean(da24d$tempo))
 
-da24d |>
+p24d <- da24d |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1]) +
   ggplot2::geom_vline(xintercept = media_24d, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24d, " dias"), x = 530, y = 15), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24d, " dias"), x = 620, y = 17), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo entre a distribuição do processo e a denúncia (N = {n24d})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24d.png",
+  p24d, width = 10, height = 5
+)
 
 # e) denúncia até seu recebimento;  -----------------------------------------------------------------------
 da24e <- da |>
@@ -1399,17 +1493,22 @@ n24e <- nrow(da24e)
 
 media_24e <- round(mean(da24e$tempo))
 
-da24e |>
+p24e <- da24e |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1]) +
   ggplot2::geom_vline(xintercept = media_24e, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24e, " dias"), x = 25, y = 40), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24e, " dias"), x = 28, y = 72), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo entre a denúncia e o seu recebimento (N = {n24e})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24e.png",
+  p24e, width = 10, height = 5
+)
 
 # f) do recebimento até a pronúncia;  -----------------------------------------------------------------------
 da24f <- da |>
@@ -1423,17 +1522,22 @@ n24f <- nrow(da24f)
 
 media_24f <- round(mean(da24f$tempo))
 
-da24f |>
+p24f <- da24f |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 100) +
   ggplot2::geom_vline(xintercept = media_24f, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24f, " dias"), x = 500, y = 3.5), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24f, " dias"), x = 1700, y = 3.5), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de pronúncia (N = {n24f})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24f.png",
+  p24f, width = 10, height = 5
+)
 
 # g) do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou extinção da punibilidade;  -----------------------------------------------------------------------
 da24g <- da |>
@@ -1450,20 +1554,22 @@ n24g <- nrow(da24g)
 
 media_24g <- round(mean(da24g$tempo))
 
-da24g |>
+p24g <- da24g |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
   ggplot2::geom_vline(xintercept = media_24g, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 530, y = 1.8), color = "red") +
-  ggplot2::scale_y_continuous(breaks = c(0:2)) +
-  ggplot2::scale_x_continuous(breaks = c(0:12)*100) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 1150, y = 5), color = "red") +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de impronúncia, desclassificaçãona primeira fase, absolvição sumária\nou extinção da punibilidade (N = {n24f})"),
+    title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de impronúncia, desclassificação\n na primeira fase, absolvição sumária ou extinção da punibilidade (N = {n24f})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24g.png",
+  p24g, width = 10, height = 5
+)
 # h) da pronúncia até a sentença após plenário -----------------------------------------------------------------------
 da24h <- da |>
   dplyr::filter(natureza_decisao == "Sentença após plenário do júri") |>
@@ -1476,19 +1582,22 @@ n24h <- nrow(da24h)
 
 media_24h <- round(mean(da24h$tempo))
 
-da24h |>
+p24h <- da24h |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1]) +
   ggplot2::geom_vline(xintercept = media_24h, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24h, " dias"), x = 440, y = 7), color = "red") +
-  ggplot2::scale_y_continuous(breaks = c(0:9)) +
-  ggplot2::scale_x_continuous(breaks = c(0:12)*100) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24h, " dias"), x = 1400, y = 15), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo entre a denúncia e a sentença após plenário (N = {n24g})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24h.png",
+  p24h, width = 10, height = 5
+)
 
 # 25 – Colunas O, P e Q: para os processos que foram suspensos com base no art. 366 (resposta “sim” na coluna O), qual o intervalo de duração entre a coluna P (data da suspensão) e a coluna Q (data da revogação da suspensão) =========================================================================
 da25 <- da |>
@@ -1502,20 +1611,22 @@ n25 <- nrow(da25)
 
 media_25 <- round(mean(da25$tempo))
 
-da25 |>
+p25 <- da25 |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
   ggplot2::geom_vline(xintercept = media_25, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_25, " dias"), x = 400, y = 3.3), color = "red") +
-  ggplot2::scale_y_continuous(breaks = c(0:9)) +
-  ggplot2::scale_x_continuous(breaks = c(0, 100, 200, 300, 400, 500, 600, 700, 1000, 1500, 2000)) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_25, " dias"), x = 2500, y = 3), color = "red") +
   ggplot2::labs(
     title = glue::glue("Tempo de suspensão (N = {n25})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p25.png",
+  p25, width = 10, height = 5
+)
 # 26 – Colunas R e S + AM e NA + AY e AZ: =========================================================================
 da26 <- da |>
   dplyr::select(
@@ -1537,9 +1648,24 @@ n26a <- da26 |>
   )
 
 p26a_denuncia <- da26 |>
-  grafico_base(denuncia_homicidio) +
+  dplyr::filter(!is.na(denuncia_homicidio)) |>
+  dplyr::mutate(
+    denuncia_homicidio = forcats::fct_infreq(denuncia_homicidio),
+    denuncia_homicidio = forcats::fct_relevel(denuncia_homicidio, "Não consta", after = Inf)
+  ) |>
+  dplyr::count(denuncia_homicidio) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = denuncia_homicidio == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = denuncia_homicidio, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values=c(cores_abj[1], "gray70")) +
   ggplot2::labs(
-    title = glue::glue("Homicídios simples na denúncia (N = {n26a[[1]][1]})"),
+    title = glue::glue("Homicídios simples\nna denúncia (N = {n26a[[1]][1]})"),
     x = "É homicídio simples?",
     y = "Quantidade de processos"
   )
@@ -1547,7 +1673,7 @@ p26a_denuncia <- da26 |>
 p26a_pronuncia <- da26 |>
   grafico_base(pronuncia_homicidio) +
   ggplot2::labs(
-    title = glue::glue("Homicídios simples na pronúncia (N = {n26a[[2]][1]})"),
+    title = glue::glue("Homicídios simples\nna pronúncia (N = {n26a[[2]][1]})"),
     x = "É homicídio simples?",
     y = "Quantidade de processos"
   )
@@ -1555,13 +1681,18 @@ p26a_pronuncia <- da26 |>
 p26a_plenario <- da26 |>
   grafico_base(plenario_homicidio) +
   ggplot2::labs(
-    title = glue::glue("Homicídios simples no plenário (N = {n26a[[3]][1]})"),
+    title = glue::glue("Homicídios simples\nno plenário (N = {n26a[[3]][1]})"),
     x = "É homicídio simples?",
     y = "Quantidade de processos"
   )
 
 p26a <-  gridExtra::grid.arrange(p26a_denuncia, p26a_pronuncia, p26a_plenario,
                                 nrow = 1)
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p26a.png",
+  p26a, width = 10, height = 4
+)
 
 # b) Se for qualificado, qual o grau de incidência de cada qualificadora -----------------------------------------------------------------------
 da26b <- da26 |>
@@ -1647,8 +1778,12 @@ p26b <- da26b |>
     y = "Quantidade de processos"
   )
 
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p26b.png",
+  p26b, width = 10, height = 5
+)
 
-# c) Por fim, verificar como o enquadramento típico evoluiu ao longo desses três momentos processuais. Na prática, comparar os resultados das perguntas “a” e “b” acima revelarão isso. No entanto, a comparação completa só fará sentido nos casos em que houve denúncia, pronúncia e plenário, devendo ser isolados os casos em que houve denúncia, mas não pronúncia e os casos em que houve pronúncia mas ainda não houve plenário. -----------------------------------------------------------------------
+# c) !!!!!!!! Por fim, verificar como o enquadramento típico evoluiu ao longo desses três momentos processuais. Na prática, comparar os resultados das perguntas “a” e “b” acima revelarão isso. No entanto, a comparação completa só fará sentido nos casos em que houve denúncia, pronúncia e plenário, devendo ser isolados os casos em que houve denúncia, mas não pronúncia e os casos em que houve pronúncia mas ainda não houve plenário. -----------------------------------------------------------------------
 da26c <- da26 |>
   dplyr::mutate(
     dplyr::across(
@@ -1671,7 +1806,7 @@ da26c <- da26 |>
   ) |>
   tidyr::separate_rows(denuncia_qualificadoras, sep = "., Art. ") |>
   tidyr::separate_rows(pronuncia_qualificadoras, sep = "., Art. ") |>
-  dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
+  # dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
   tidyr::separate_rows(plenario_qualificadoras, sep = "., Art. ") |>
   # dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
   dplyr::mutate(
@@ -1690,7 +1825,9 @@ da26c <- da26 |>
         TRUE ~ .x
       )
     )
-  )
+  ) |>
+  dplyr::group_by(id_processo)
+
 
 
 # 27 – Colunas V, W, X, Y e Z (perguntas sobre prisão provisória): =========================================================================

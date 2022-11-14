@@ -60,7 +60,7 @@ aux_taxa %>%
   dplyr::filter(taxa_ativo < 2) %>%
   ggplot2::ggplot() +
   ggplot2::aes(taxa_ativo) +
-  ggplot2::geom_histogram(bins = 20, fill = blue_abj[1]) +
+  ggplot2::geom_histogram(bins = 20, fill = blue_abj) +
   ggplot2::scale_x_continuous(labels = scales::percent, breaks = 0:10/5) +
   ggplot2::theme_minimal(12) +
   ggplot2::geom_vline(xintercept = taxa_recup, colour = "red", linetype = 2) +
