@@ -18,6 +18,8 @@ grafico_base <- function(da, var) {
     ggplot2::geom_label()
 }
 
+googlesheets4::gs4_auth("rfeliz@abj.org.br")
+link <- "https://docs.google.com/spreadsheets/d/1MKcKfcp24nG5zixL1-94oFSbI00sA-z0W4kx1rHiuQk/edit#gid=0"
 # fs::dir_create("data-raw/bruno-nassar-puc/img")
 
 # 1 – Coluna C: qual a distribuição de processos entre as varas? =========================================================================
@@ -213,7 +215,7 @@ ggplot2::ggsave(
   p08, width = 7, height = 4
 )
 
-# 9 – Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
+# 9 – !!!!! Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
 p09 <- da |>
   dplyr::transmute(
     id_processo,
@@ -1253,6 +1255,23 @@ da23b <- da |>
 n23b <- nrow(da23b)
 
 # (i) Coluna BO: medir o lapso temporal entre a sentença nulificada (coluna BO) e a sentença atual (coluna N); ): -----------------------------------------------------------------------
+t23bi <- da23b |>
+  dplyr::mutate(
+    tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
+  ) |>
+  dplyr::transmute(
+    id_processo,
+    dt_plenario,
+    dt_sentenca_nulificada,
+    tempo_sentenca_nulificada = as.numeric(tempo_sentenca_nulificada)
+  )
+
+googlesheets4::write_sheet(
+  t23bi,
+  link,
+  "t23bi"
+)
+
 p23bi <- da23b |>
   dplyr::mutate(
     tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
@@ -1273,12 +1292,40 @@ p23bi <- da23b |>
     y = "Contagem de casos"
   )
 
+t23bi <- da23b |>
+  dplyr::mutate(
+    tempo_sentenca_nulificada = dt_plenario - dt_sentenca_nulificada
+  ) |>
+  dplyr::select(
+    id_processo,
+    dt_plenario,
+    dt_sentenca_nulificada,
+    tempo_sentenca_nulificada
+  )
+
 ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p23bi.png",
   p23bi, width = 10, height = 5
 )
 
 # (ii) medir o lapso temporal entre a sentença nulificada (coluna BO) e o acórdão que a nulificou (coluna BR); ): -----------------------------------------------------------------------
+t23bii <-  da23b |>
+  dplyr::mutate(
+    tempo_nulificada_acordao = dt_acordao_nulificada - dt_sentenca_nulificada
+  ) |>
+  dplyr::transmute(
+   id_processo,
+   dt_acordao_nulificada,
+   dt_sentenca_nulificada,
+   tempo_nulificada_acordao = as.numeric(tempo_nulificada_acordao)
+  )
+
+googlesheets4::write_sheet(
+  t23bii,
+  link,
+  "t23bii"
+)
+
 p23bii <- da23b |>
   dplyr::mutate(
     tempo_nulificada_acordao = dt_acordao_nulificada - dt_sentenca_nulificada
@@ -1783,7 +1830,7 @@ ggplot2::ggsave(
   p26b, width = 10, height = 5
 )
 
-# c) !!!!!!!! Por fim, verificar como o enquadramento típico evoluiu ao longo desses três momentos processuais. Na prática, comparar os resultados das perguntas “a” e “b” acima revelarão isso. No entanto, a comparação completa só fará sentido nos casos em que houve denúncia, pronúncia e plenário, devendo ser isolados os casos em que houve denúncia, mas não pronúncia e os casos em que houve pronúncia mas ainda não houve plenário. -----------------------------------------------------------------------
+# c) Por fim, verificar como o enquadramento típico evoluiu ao longo desses três momentos processuais. Na prática, comparar os resultados das perguntas “a” e “b” acima revelarão isso. No entanto, a comparação completa só fará sentido nos casos em que houve denúncia, pronúncia e plenário, devendo ser isolados os casos em que houve denúncia, mas não pronúncia e os casos em que houve pronúncia mas ainda não houve plenário. -----------------------------------------------------------------------
 da26c <- da26 |>
   dplyr::mutate(
     dplyr::across(
@@ -1806,9 +1853,7 @@ da26c <- da26 |>
   ) |>
   tidyr::separate_rows(denuncia_qualificadoras, sep = "., Art. ") |>
   tidyr::separate_rows(pronuncia_qualificadoras, sep = "., Art. ") |>
-  # dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
   tidyr::separate_rows(plenario_qualificadoras, sep = "., Art. ") |>
-  # dplyr::distinct(id_processo, denuncia_qualificadoras, .keep_all = TRUE)
   dplyr::mutate(
     dplyr::across(
       dplyr::contains("_qualificadoras"),
@@ -1826,21 +1871,358 @@ da26c <- da26 |>
       )
     )
   ) |>
-  dplyr::group_by(id_processo)
+  dplyr::group_by(id_processo) |>
+  dplyr::summarise(
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", I$")),
+      .names = "{.col}_I"
+    ),
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", II$")),
+      .names = "{.col}_II"
+    ),
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", III$")),
+      .names = "{.col}_III"
+    ),
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", IV$")),
+      .names = "{.col}_IV"
+    ),
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", V$")),
+      .names = "{.col}_V"
+    ),
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", VI$")),
+      .names = "{.col}_VI"
+    ),
+    dplyr::across(
+      dplyr::ends_with("_qualificadoras"),
+      ~any(stringr::str_detect(.x, ", VII$")),
+      .names = "{.col}_VII"
+    )
+  ) |>
+  dplyr::ungroup() |>
+  tidyr::pivot_longer(cols = dplyr::contains("qualificadoras"),names_to = "inciso",values_to = "possui") |>
+  dplyr::mutate(
+    fase = stringr::str_extract(inciso, ".+(?=_qualificadoras)"),
+    inciso = stringr::str_extract(inciso, "(?<=_qualificadoras_).+")
+  ) |>
+  dplyr::group_by(id_processo, inciso) |>
+  dplyr::summarise(
+    convergencia = (all(possui) | all(!possui))
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(inciso) |>
+  dplyr::count(convergencia) |>
+  dplyr::mutate(
+    inciso = paste0("Art. 121, §2º, ", inciso),
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    convergencia = ifelse(convergencia, "Sim", "Não"),
+    convergencia = forcats::fct_relevel(convergencia, "Sim", after=0L)
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::filter(convergencia == "Sim") |>
+  dplyr::transmute(
+    inciso,
+    n,
+    prop,
+    taxa_convergencia = perc
+  )
 
+n_26c <- nrow(da26c)
+
+t26c <- da26c |>
+  dplyr::select(
+    inciso, n, taxa_convergencia
+  )
+
+googlesheets4::write_sheet(
+  t26c,
+  link,
+  "t26c"
+)
+
+p26c <- da26c |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = inciso, y = n, label = taxa_convergencia) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label() +
+  ggplot2::labs(
+    title = glue::glue("Taxa de convergência de cada qualificadora entre as\ntrês fases do processo (N = {n_26c})"),
+    x = "Qualificadora",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p26c.png",
+  p26c, width = 10, height = 5
+)
 
 
 # 27 – Colunas V, W, X, Y e Z (perguntas sobre prisão provisória): =========================================================================
+da27 <- da |>
+  dplyr::select(
+    id_processo,
+    flagrante,
+    pris_prev,
+    dt_pris_prev,
+    liberdade,
+    dt_soltura
+  ) |>
+  dplyr::mutate(
+    pris_prev = dplyr::case_when(
+      pris_prev == "Não" ~ "Não",
+      pris_prev == "Não consta" ~ "Não consta",
+      stringr::str_detect(pris_prev, "Sim") ~ "Sim"
+    ),
+    prisao = dplyr::case_when(
+      flagrante == "Sim" | pris_prev == "Sim" ~ "Sim",
+      is.na(flagrante) & is.na(pris_prev) ~ NA_character_,
+      TRUE ~ "Não"
+    ),
+    tipo_prisao = dplyr::case_when(
+      flagrante == "Sim" & pris_prev == "Sim" ~ "Ambos",
+      flagrante == "Sim" ~ "Flagrante",
+      pris_prev == "Sim" ~ "Preventiva",
+      prisao == "Não" ~ NA_character_
+    ),
+    liberdade = dplyr::case_when(
+      liberdade == "Não" ~ "Não",
+      liberdade == "Não consta" ~ "Não consta",
+      is.na(liberdade) ~ "Não consta",
+      prisao == "Não" ~ NA_character_,
+      TRUE ~ "Sim"
+    )
+  )
+
 # a) Em quantos casos houve flagrante (coluna V) -----------------------------------------------------------------------
+p27a <- da27 |>
+  dplyr::filter(!is.na(flagrante)) |>
+  dplyr::count(flagrante) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = flagrante == "Não consta",
+    flagrante = forcats::fct_relevel(flagrante, "Não consta", after=Inf)
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = flagrante, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = "Casos de flagrante",
+    x = "Houve flagrante?",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p27a.png",
+  p27a, width = 7, height = 6
+)
+
 # b) Em quantos casos houve preventiva (coluna W) -----------------------------------------------------------------------
+p27b <- da27 |>
+  dplyr::filter(!is.na(pris_prev)) |>
+  dplyr::mutate(
+    pris_prev = forcats::fct_infreq(pris_prev)
+  ) |>
+  dplyr::count(pris_prev) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = pris_prev == "Não consta",
+    pris_prev = forcats::fct_relevel(pris_prev, "Não consta", after=Inf)
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = pris_prev, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = "Casos de prisão preventiva",
+    x = "Houve prisão preventiva?",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p27b.png",
+  p27b, width = 7, height = 6
+)
+
 # c) Coluna Y: nos casos em que houve prisão (flagrante ou preventiva), em quantos houve relaxamento da prisão? E em quantos o réu ficou preso até o fim do processo? -----------------------------------------------------------------------
+p27c <- da27 |>
+  dplyr::mutate(
+    liberdade = forcats::fct_infreq(liberdade),
+    liberdade = forcats::fct_relevel(liberdade, "Não consta", after=Inf)
+  ) |>
+  dplyr::filter(prisao == "Sim") |>
+  dplyr::count(prisao, tipo_prisao, liberdade) |>
+  dplyr::group_by(tipo_prisao) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = liberdade == "Não consta"
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = liberdade, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::facet_wrap(.~tipo_prisao, scales = "free_y") +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = "Relaxamento da prisão, a depender do motivo da prisão",
+    x = "Houve relaxamento da prisão?",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p27c.png",
+  p27c, width = 10, height = 5
+)
+
 # d) Colunas X + Z: nos casos em que houve relaxamento da prisão, qual o intervalo de tempo entre a decisão que decretou a prisão e a decisão que determinou a soltura -----------------------------------------------------------------------
+da27d <- da27 |>
+  dplyr::mutate(
+    tempo = dt_soltura - dt_pris_prev
+  ) |>
+  dplyr::filter(liberdade == "Sim", tempo >= 0)
+
+n_27d <- nrow(da27d)
+
+media_27d <- da27d |>
+  dplyr::summarise(media = round(mean(tempo))) |>
+  dplyr::pull()
+
+p27d <- da27d |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_27d, color = 'red', linetype = 2) +
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = paste0(media_27d, " dias"),
+      x = media_27d + 450,
+      y = 15
+    ),
+    color = "red"
+  ) +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a prisão preventiva e o seu relaxamento\n(N = {n_27d})"),
+    x = "Tempo (em dias)",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p27d.png",
+  p27d, width = 10, height = 5
+)
 
 # 28 – Coluna AH (menos quando a resposta foi “sentença de pronúncia”) e Coluna AT (resultado do julgamento) X colunas variadas = basicamente, comparar o resultado do julgamento conforme: =========================================================================
+da28 <- da |>
+  dplyr::select(
+    natureza_decisao, julgamento,
+    pris_prev,
+    n_reus_julgados,
+    sexo_reus_julgados,
+    cor_reus_julgados,
+    n_vitimas,
+    sexo_vitimas,
+    agente_ip,
+    hr_fato,
+    defesa_inicial,
+    defesa_mudanca,
+    resultado_crime
+  ) |>
+  dplyr::filter(natureza_decisao != "\"Sentença\" de pronúncia" | is.na(natureza_decisao))
+
 # a) Se o réu foi preso preventivamente ou não durante o processo (coluna W) -----------------------------------------------------------------------
+p28a <- da28 |>
+  dplyr::mutate(
+    pris_prev = dplyr::case_when(
+      pris_prev == "Não" ~ "Não",
+      pris_prev == "Não consta" ~ "Não consta",
+      stringr::str_detect(pris_prev, "Sim") ~ "Sim"
+    ),
+    pris_prev = forcats::fct_infreq(pris_prev),
+    pris_prev = forcats::fct_relevel(pris_prev, "Não consta", after = Inf)
+  ) |>
+  dplyr::filter(!is.na(pris_prev)) |>
+  dplyr::count(pris_prev) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = pris_prev == "Não consta"
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = pris_prev, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
+  ggplot2::geom_label() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::labs(
+    title = "Prisão preventiva durante o processo",
+    x = "O réu foi preso preventivamente durante o processo?",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p28a.png",
+  p28a, width = 7, height = 6
+)
+
 # b) O número de réus julgados (coluna AA) -----------------------------------------------------------------------
+p28b <- da28 |>
+  grafico_base(n_reus_julgados) +
+  ggplot2::labs(
+    title = "Número de réus julgados",
+    x = "Quantidade de réus julgados",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p28b.png",
+  p28b, width = 7, height = 6
+)
+
 # c) O sexo dos réus julgados (coluna AB) -----------------------------------------------------------------------
+p28c <- da28 |>
+  dplyr::mutate(sexo_reus_julgados = forcats::fct_infreq(sexo_reus_julgados)) |>
+  grafico_base(sexo_reus_julgados) +
+  ggplot2::labs(
+    title = "Sexo dos réus julgados",
+    x = "Sexo dos réus julgados",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p28c.png",
+  p28c, width = 7, height = 6
+)
+
 # d) A cor dos réus julgados (coluna AC) -----------------------------------------------------------------------
+p28d <- da28 |>
+  dplyr::mutate(cor_reus_julgados = forcats::fct_infreq(cor_reus_julgados)) |>
+  grafico_base(cor_reus_julgados) +
+  ggplot2::labs(
+    title = "Cor dos réus julgados",
+    x = "Cor dos réus julgados",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p28c.png",
+  p28c, width = 7, height = 6
+)
 # e) Se o réu era policial (coluna AD) -----------------------------------------------------------------------
 # f) A quantidade de vítimas (coluna AE) -----------------------------------------------------------------------
 # g) O sexo das vítimas (coluna AF) -----------------------------------------------------------------------
