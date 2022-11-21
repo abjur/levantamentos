@@ -3231,7 +3231,7 @@ da31 <- da |>
 n31 <- nrow(da31)
 
 # a) Se o réu foi preso preventivamente ou não durante o processo (coluna W) -----------------------------------------------------------------------
-da31 |>
+p31a <- da31 |>
   dplyr::mutate(
     pris_prev = dplyr::case_when(
       pris_prev == "Não" ~ "Não",
@@ -3240,32 +3240,150 @@ da31 |>
     ),
     pris_prev = forcats::fct_infreq(pris_prev)
   ) |>
-  dplyr::filter(!is.na(pris_prev)) |>
   dplyr::count(pris_prev, tempo_pena) |>
-  dplyr::group_by(pris_prev) |>
+  dplyr::group_by(tempo_pena) |>
   dplyr::mutate(
     prop = n/sum(n),
     perc = formattable::percent(prop)
   ) |>
+  dplyr::ungroup() |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_pena, y = n, label = perc) +
   ggplot2::geom_col(ggplot2::aes(fill = pris_prev), position='dodge') +
-  ggplot2::geom_label() +
-  # ggplot2::facet_wrap(.~pris_prev) +
-  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
+  ggplot2::geom_label(ggplot2::aes(group = pris_prev), position=ggplot2::position_dodge(width=1)) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_manual(values = cores_abj) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
   ggplot2::labs(
-    title = "Tempo da pena em função de haver prisão preventiva",
+    title = glue::glue("Tempo da pena em função de haver prisão preventiva (N = {n31})"),
     x = "Tempo da pena",
-    y = "Quantidade de casos"
+    y = "Quantidade de casos",
+    fill = "Houve prisão\npreventiva"
   )
 
-# para resolver este problema, ver o relatório da unichristus
-# buscar no grupo da ABJ as palavras geom_label group
-# ver https://github.com/tidyverse/ggplot2/issues/2198
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31a.png",
+  p31a, width = 10, height = 5
+)
 
 # b) O número de réus julgados (coluna AA) -----------------------------------------------------------------------
+p31b <- da31 |>
+  dplyr::count(n_reus_julgados, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = n_reus_julgados), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = n_reus_julgados), position=ggplot2::position_dodge(width=0.8), size=3) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_manual(values = cores_abj) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função da quantidade de réus julgados (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Quantidade de réus\njulgados?"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31b.png",
+  p31b, width = 10, height = 5
+)
 # c) O sexo dos réus julgados (coluna AB) -----------------------------------------------------------------------
+p31c <- da31 |>
+  dplyr::count(sexo_reus_julgados, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = sexo_reus_julgados), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = sexo_reus_julgados), position=ggplot2::position_dodge2(width=1), size=2.5) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_viridis_d(begin = .2, end = .8, direction = -1) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função do sexo dos réus julgados (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Sexo dos réus\njulgados"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31c.png",
+  p31c, width = 10, height = 5
+)
 # d) A cor dos réus julgados (coluna AC) -----------------------------------------------------------------------
+da31 |>
+  dplyr::transmute(
+    id_processo,
+    cor_reu1 = dplyr::case_when(
+      cor_reus_julgados == "Branca, Parda (dos outros dois não consta)" ~ "Branca",
+      n_reus_julgados == 1 ~ cor_reus_julgados,
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Parda" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Preta" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda, Preta" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta",
+      n_reus_julgados == 3 & cor_reus_julgados == "Branca, Parda, Preta" ~ "Branca"
+    ),
+    cor_reu2 = dplyr::case_when(
+      n_reus_julgados == 1 ~ NA_character_,
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca" ~ "Branca",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Parda" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Branca, Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda" ~ "Parda",
+      n_reus_julgados == 2 & cor_reus_julgados == "Parda, Preta" ~ "Preta",
+      n_reus_julgados == 2 & cor_reus_julgados == "Preta" ~ "Preta",
+      cor_reus_julgados == "Branca, Parda (dos outros dois não consta)" ~ "Parda",
+      n_reus_julgados == 3 & cor_reus_julgados == "Branca, Parda, Preta" ~ "Parda"
+    ),
+    cor_reu3 = dplyr::case_when(
+      n_reus_julgados == 3 & cor_reus_julgados == "Branca, Parda, Preta" ~ "Preta",
+      cor_reus_julgados == "Branca, Parda (dos outros dois não consta)" ~ "Não consta"
+    ),
+    cor_reu4 = dplyr::case_when(
+      cor_reus_julgados == "Branca, Parda (dos outros dois não consta)" ~ "Não consta"
+    ),
+    tempo_pena
+  ) |>
+  tidyr::pivot_longer(cols = contains("cor_reu"), values_to = "cor_reus_julgados") |>
+  dplyr::filter(!is.na(cor_reus_julgados)) |>
+  dplyr::count(cor_reus_julgados, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::arrange(desc(n)) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop),
+    col_dif = cor_reus_julgados == "Não consta",
+    cor_reus_julgados = forcats::fct_inorder(cor_reus_julgados),
+    cor_reus_julgados = forcats::fct_relevel(cor_reus_julgados, "Não consta", after=Inf)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = cor_reus_julgados), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = cor_reus_julgados), position=ggplot2::position_dodge2(width=1), size=3) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_y_continuous(breaks=c(0,2,4,6,8,10,12)) +
+  ggplot2::scale_fill_manual(values=c(viridis::viridis(3, 1, .2, .8), "gray70")) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função da cor dos réus julgados (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Cor dos réus\njulgados"
+  )
 # e) Se o réu era policial (coluna AD) -----------------------------------------------------------------------
 # f) A quantidade de vítimas (coluna AE) -----------------------------------------------------------------------
 # g) O sexo das vítimas (coluna AF) -----------------------------------------------------------------------
