@@ -215,7 +215,7 @@ ggplot2::ggsave(
   p08, width = 7, height = 4
 )
 
-# 9 – !!!!! Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
+# 9 – !!!!! (esperando resposta do Brun) Coluna AC: qual a distribuição no que diz respeito à cor dos réus? =========================================================================
 p09 <- da |>
   dplyr::transmute(
     id_processo,
@@ -3224,6 +3224,7 @@ da31 <- da |>
     reu_policial,
     n_vitimas,
     sexo_vitimas,
+    agente_ip,
     parte_do_dia_fato
   ) |>
   dplyr::filter(!is.na(tempo_pena))
@@ -3321,7 +3322,7 @@ ggplot2::ggsave(
   p31c, width = 10, height = 5
 )
 # d) A cor dos réus julgados (coluna AC) -----------------------------------------------------------------------
-da31 |>
+p31d <- da31 |>
   dplyr::transmute(
     id_processo,
     cor_reu1 = dplyr::case_when(
@@ -3364,7 +3365,7 @@ da31 |>
   dplyr::arrange(desc(n)) |>
   dplyr::mutate(
     prop = n/sum(n),
-    perc = formattable::percent(prop),
+    perc = formattable::percent(prop,digits = 1),
     col_dif = cor_reus_julgados == "Não consta",
     cor_reus_julgados = forcats::fct_inorder(cor_reus_julgados),
     cor_reus_julgados = forcats::fct_relevel(cor_reus_julgados, "Não consta", after=Inf)
@@ -3373,7 +3374,7 @@ da31 |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_pena, y = n, label = perc) +
   ggplot2::geom_col(ggplot2::aes(fill = cor_reus_julgados), position='dodge') +
-  ggplot2::geom_label(ggplot2::aes(group = cor_reus_julgados), position=ggplot2::position_dodge2(width=1), size=3) +
+  ggplot2::geom_label(ggplot2::aes(group = cor_reus_julgados), position=ggplot2::position_dodge2(width=.9), size=2.5) +
   ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
   ggplot2::scale_y_continuous(breaks=c(0,2,4,6,8,10,12)) +
   ggplot2::scale_fill_manual(values=c(viridis::viridis(3, 1, .2, .8), "gray70")) +
@@ -3384,8 +3385,204 @@ da31 |>
     y = "Quantidade de casos",
     fill = "Cor dos réus\njulgados"
   )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31d.png",
+  p31d, width = 10, height = 5
+)
 # e) Se o réu era policial (coluna AD) -----------------------------------------------------------------------
+p31e <- da31 |>
+  dplyr::mutate(
+    reu_policial = forcats::fct_infreq(reu_policial),
+    reu_policial = forcats::fct_relevel(reu_policial, "Não consta", after=Inf)
+  ) |>
+  dplyr::count(reu_policial, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop,digits = 0)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = reu_policial), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = reu_policial), position=ggplot2::position_dodge2(width=1), size=2) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_manual(values=c(viridis::viridis(3, 1, .2, .8), "gray70")) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função de o réu ser policial (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "O réu é policial?"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31e.png",
+  p31e, width = 10, height = 5
+)
 # f) A quantidade de vítimas (coluna AE) -----------------------------------------------------------------------
+p31f <- da31 |>
+  dplyr::count(n_vitimas, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop,digits = 0),
+    n_vitimas = factor(n_vitimas, levels = c("1", "2", "3", "4 ou mais", "Não consta"))
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = n_vitimas), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = n_vitimas), position=ggplot2::position_dodge2(width=1), size=2.5) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_manual(values=c(viridis::viridis(4, 1, .2, .8), "gray70")) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função da quantidade de vítimas (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Quantidade de vítimas"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31f.png",
+  p31f, width = 10, height = 5
+)
 # g) O sexo das vítimas (coluna AF) -----------------------------------------------------------------------
+p31g <- da31 |>
+  dplyr::transmute(
+    id_processo,
+    sexo_vitima1 = dplyr::case_when(
+      n_vitimas == "Não consta" & sexo_vitimas == "Não consta" ~ "Não consta",
+      n_vitimas == "1" ~ sexo_vitimas,
+      n_vitimas == "2" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "2" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "2" & sexo_vitimas == "Ambos" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos (duas mulheres e um homem)" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Não consta" ~ "Não consta",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Ambos (2 homens e 2 mulheres)" ~ "Masculino"
+    ),
+    sexo_vitima2 = dplyr::case_when(
+      n_vitimas == "1" ~ NA_character_,
+      n_vitimas == "2" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "2" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "2" & sexo_vitimas == "Ambos" ~ "Feminino",
+      n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos (duas mulheres e um homem)" ~ "Feminino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Não consta" ~ "Não consta",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Ambos (2 homens e 2 mulheres)" ~ "Masculino"
+    ),
+    sexo_vitima3 = dplyr::case_when(
+      n_vitimas == "1" ~ NA_character_,
+      n_vitimas == "2" ~ NA_character_,
+      n_vitimas == "3" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "3" & sexo_vitimas == "Feminino" ~ "Feminino",
+      n_vitimas == "3" & sexo_vitimas == "Ambos (duas mulheres e um homem)" ~ "Feminino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Não consta" ~ "Não consta",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Ambos (2 homens e 2 mulheres)" ~ "Feminino"
+    ),
+    sexo_vitima4 = dplyr::case_when(
+      n_vitimas == "1" ~ NA_character_,
+      n_vitimas == "2" ~ NA_character_,
+      n_vitimas == "3" ~ NA_character_,
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Masculino" ~ "Masculino",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Não consta" ~ "Não consta",
+      n_vitimas == "4 ou mais" & sexo_vitimas == "Ambos (2 homens e 2 mulheres)" ~ "Feminino"
+    ),
+    tempo_pena
+  ) |>
+  tidyr::pivot_longer(cols = contains("sexo_vitima"), values_to = "sexo_vitimas") |>
+  dplyr::filter(!is.na(sexo_vitimas)) |>
+  dplyr::count(sexo_vitimas, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::arrange(desc(n)) |>
+  dplyr::mutate(
+    sexo_vitimas = forcats::fct_inorder(sexo_vitimas),
+    sexo_vitimas = forcats::fct_relevel(sexo_vitimas, after = Inf, "Não consta"),
+    prop = n/sum(n),
+    perc = formattable::percent(prop,digits = 0),
+    col_dif = sexo_vitimas == "Não consta"
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = sexo_vitimas), position='dodge2') +
+  ggplot2::geom_label(ggplot2::aes(group = sexo_vitimas), position=ggplot2::position_dodge(width=1), size=2) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_manual(values=c(viridis::viridis(3, 1, .2, .8), "gray70")) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função do sexo das vítimas (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Sexo das vítimas"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31g.png",
+  p31g, width = 10, height = 5
+)
+
 # h) Quem desenvolveu o inquérito (coluna AG) -----------------------------------------------------------------------
+p31h <- da31 |>
+  dplyr::count(agente_ip, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    perc = formattable::percent(prop,digits = 0)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = agente_ip), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = agente_ip), position=ggplot2::position_dodge2(width=1), size=2.5) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_fill_manual(values=c(viridis::viridis(3, 1, .2, .8), "gray70")) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função do agente que realizou o inquérito policial (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Agente que realizou\no inquérito policial"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31h.png",
+  p31h, width = 10, height = 5
+)
 # i) Horário do fato (coluna H) -----------------------------------------------------------------------
+p31i <- da31 |>
+  dplyr::count(parte_do_dia_fato, tempo_pena) |>
+  dplyr::group_by(tempo_pena) |>
+  dplyr::mutate(
+    parte_do_dia_fato = factor(parte_do_dia_fato, levels = c("Madrugada (00:01 às 06:00)", "Manhã (06:01 às 12:00)", "Tarde (12:01 às 18:00)", "Noite (18:01 às 00:00)", "Não consta")),
+    prop = n/sum(n),
+    perc = formattable::percent(prop,digits = 0)
+  ) |>
+  dplyr::ungroup() |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo_pena, y = n, label = perc) +
+  ggplot2::geom_col(ggplot2::aes(fill = parte_do_dia_fato), position='dodge') +
+  ggplot2::geom_label(ggplot2::aes(group = parte_do_dia_fato), position=ggplot2::position_dodge2(width=1),size=2) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(15)) +
+  ggplot2::scale_y_continuous(breaks=c(0,2,4,6,8,10,12)) +
+  ggplot2::scale_fill_manual(values=c(viridis::viridis(4, 1, .2, .8), "gray70")) +
+  ggplot2::theme(legend.position = c(0.9, 0.7)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo da pena em função do horário do fato (N = {n31})"),
+    x = "Tempo da pena",
+    y = "Quantidade de casos",
+    fill = "Horário do fato"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p31i.png",
+  p31i, width = 10, height = 5
+)
