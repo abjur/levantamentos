@@ -1581,7 +1581,34 @@ ggplot2::ggsave(
 
 # f) do recebimento até a pronúncia;  -----------------------------------------------------------------------
 da24f <- da |>
-  dplyr::filter(natureza_decisao == "\"Sentença\" de pronúncia") |>
+  dplyr::mutate(
+    dt_pronuncia_original = dt_pronuncia,
+    dt_impronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de impronúncia' ~ dt_pronuncia
+    ),
+    dt_desclassificacao = dplyr::case_when(
+      natureza_decisao == "Decisão de desclassificação proferida ao fim da primeira fase do júri" ~ dt_pronuncia
+    ),
+    dt_pronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de pronúncia' ~ dt_pronuncia,
+      natureza_decisao == "Sentença de extinção da punibilidade" & !is.na(dt_pronuncia) ~ dt_pronuncia,
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_pronuncia
+    ),
+    dt_plenario_original = dt_plenario,
+    dt_absolvicao_sumaria = dplyr::case_when(
+      natureza_decisao == "Sentença de absolvição sumária" ~ dt_plenario
+    ),
+    dt_extincao_punibilidade = dplyr::case_when(
+      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
+    ),
+    dt_absolvicao_impropria = dplyr::case_when(
+      natureza_decisao == "Absolvição imprópria" ~ dt_plenario
+    ),
+    dt_plenario = dplyr::case_when(
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_plenario
+    )
+  ) |>
+  dplyr::filter(!is.na(dt_pronuncia)) |>
   dplyr::mutate(
     tempo = as.numeric(dt_pronuncia - dt_recebimento_denuncia)
   ) |>
@@ -1596,9 +1623,9 @@ p24f <- da24f |>
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 100) +
   ggplot2::geom_vline(xintercept = media_24f, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24f, " dias"), x = 1700, y = 3.5), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24f, " dias"), x = 1500, y = 7.5), color = "red") +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de pronúncia (N = {n24f})"),
+    title = glue::glue("Tempo entre a denúncia e a \"sentença\" de pronúncia (N = {n24f})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
@@ -1608,14 +1635,40 @@ ggplot2::ggsave(
   p24f, width = 10, height = 5
 )
 
-# g) do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou extinção da punibilidade;  -----------------------------------------------------------------------
+# g) do recebimento até a extinção da punibilidade;  -----------------------------------------------------------------------
 da24g <- da |>
+  dplyr::mutate(
+    dt_pronuncia_original = dt_pronuncia,
+    dt_impronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de impronúncia' ~ dt_pronuncia
+    ),
+    dt_desclassificacao = dplyr::case_when(
+      natureza_decisao == "Decisão de desclassificação proferida ao fim da primeira fase do júri" ~ dt_pronuncia
+    ),
+    dt_pronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de pronúncia' ~ dt_pronuncia,
+      natureza_decisao == "Sentença de extinção da punibilidade" & !is.na(dt_pronuncia) ~ dt_pronuncia,
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_pronuncia
+    ),
+    dt_plenario_original = dt_plenario,
+    dt_absolvicao_sumaria = dplyr::case_when(
+      natureza_decisao == "Sentença de absolvição sumária" ~ dt_plenario
+    ),
+    dt_extincao_punibilidade = dplyr::case_when(
+      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
+    ),
+    dt_absolvicao_impropria = dplyr::case_when(
+      natureza_decisao == "Absolvição imprópria" ~ dt_plenario
+    ),
+    dt_plenario = dplyr::case_when(
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_plenario
+    )
+  ) |>
   dplyr::filter(
-    natureza_decisao != "\"Sentença\" de pronúncia",
-    natureza_decisao != "Sentença após plenário do júri"
+    !is.na(dt_extincao_punibilidade) & !is.na(dt_recebimento_denuncia)
   ) |>
   dplyr::mutate(
-    tempo = as.numeric(dt_pronuncia - dt_recebimento_denuncia)
+    tempo = as.numeric(dt_extincao_punibilidade - dt_recebimento_denuncia)
   ) |>
   dplyr::filter(tempo > 0)
 
@@ -1628,9 +1681,9 @@ p24g <- da24g |>
   ggplot2::aes(x = tempo) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
   ggplot2::geom_vline(xintercept = media_24g, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 1150, y = 5), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 6300, y = 2.5), color = "red") +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a denúncia e as \"sentenças\" de impronúncia, desclassificação\n na primeira fase, absolvição sumária ou extinção da punibilidade (N = {n24f})"),
+    title = glue::glue("Tempo entre a denúncia a sentença de extinção da punibilidade (N = {n24g})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
@@ -1639,13 +1692,44 @@ ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p24g.png",
   p24g, width = 10, height = 5
 )
-# h) da pronúncia até a sentença após plenário -----------------------------------------------------------------------
+
+# h) do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou absolvição imprópria;  -----------------------------------------------------------------------
 da24h <- da |>
-  dplyr::filter(natureza_decisao == "Sentença após plenário do júri") |>
   dplyr::mutate(
-    tempo = as.numeric(dt_pronuncia - dt_recebimento_denuncia)
+    dt_pronuncia_original = dt_pronuncia,
+    dt_impronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de impronúncia' ~ dt_pronuncia
+    ),
+    dt_desclassificacao = dplyr::case_when(
+      natureza_decisao == "Decisão de desclassificação proferida ao fim da primeira fase do júri" ~ dt_pronuncia
+    ),
+    dt_pronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de pronúncia' ~ dt_pronuncia,
+      natureza_decisao == "Sentença de extinção da punibilidade" & !is.na(dt_pronuncia) ~ dt_pronuncia,
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_pronuncia
+    ),
+    dt_plenario_original = dt_plenario,
+    dt_absolvicao_sumaria = dplyr::case_when(
+      natureza_decisao == "Sentença de absolvição sumária" ~ dt_plenario
+    ),
+    dt_extincao_punibilidade = dplyr::case_when(
+      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
+    ),
+    dt_absolvicao_impropria = dplyr::case_when(
+      natureza_decisao == "Absolvição imprópria" ~ dt_plenario
+    ),
+    dt_plenario = dplyr::case_when(
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_plenario
+    )
   ) |>
-  dplyr::filter(tempo > 0)
+  dplyr::filter(
+    (!is.na(dt_impronuncia) | !is.na(dt_desclassificacao) | !is.na(dt_absolvicao_sumaria) | !is.na(dt_absolvicao_impropria))
+    & !is.na(dt_recebimento_denuncia)
+  ) |>
+  dplyr::mutate(
+    dt_unica = dplyr::coalesce(dt_impronuncia, dt_desclassificacao, dt_absolvicao_sumaria, dt_absolvicao_impropria),
+    tempo = as.numeric(dt_unica - dt_recebimento_denuncia)
+  )
 
 n24h <- nrow(da24h)
 
@@ -1654,11 +1738,11 @@ media_24h <- round(mean(da24h$tempo))
 p24h <- da24h |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo) +
-  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
   ggplot2::geom_vline(xintercept = media_24h, color = "red", linetype = 2) +
-  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24h, " dias"), x = 1400, y = 15), color = "red") +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24h, " dias"), x = 1300, y = 4), color = "red") +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a denúncia e a sentença após plenário (N = {n24g})"),
+    title = glue::glue("Tempo entre a denúncia as sentenças de impronúncia, desclassificação, absolvição sumária ou\nabsolvição imprópria (N = {n24h})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
@@ -1666,6 +1750,63 @@ p24h <- da24h |>
 ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p24h.png",
   p24h, width = 10, height = 5
+)
+
+# i) da pronúncia até a sentença após plenário -----------------------------------------------------------------------
+da24i <- da |>
+  dplyr::mutate(
+    dt_pronuncia_original = dt_pronuncia,
+    dt_impronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de impronúncia' ~ dt_pronuncia
+    ),
+    dt_desclassificacao = dplyr::case_when(
+      natureza_decisao == "Decisão de desclassificação proferida ao fim da primeira fase do júri" ~ dt_pronuncia
+    ),
+    dt_pronuncia = dplyr::case_when(
+      natureza_decisao == '\"Sentença\" de pronúncia' ~ dt_pronuncia,
+      natureza_decisao == "Sentença de extinção da punibilidade" & !is.na(dt_pronuncia) ~ dt_pronuncia,
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_pronuncia
+    ),
+    dt_plenario_original = dt_plenario,
+    dt_absolvicao_sumaria = dplyr::case_when(
+      natureza_decisao == "Sentença de absolvição sumária" ~ dt_plenario
+    ),
+    dt_extincao_punibilidade = dplyr::case_when(
+      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
+    ),
+    dt_absolvicao_impropria = dplyr::case_when(
+      natureza_decisao == "Absolvição imprópria" ~ dt_plenario
+    ),
+    dt_plenario = dplyr::case_when(
+      natureza_decisao == "Sentença após plenário do júri" ~ dt_plenario
+    )
+  ) |>
+  dplyr::filter(
+    !is.na(dt_pronuncia) & !is.na(dt_plenario)
+  ) |>
+  dplyr::mutate(
+    tempo = as.numeric(dt_plenario - dt_pronuncia)
+  )
+
+n24i <- nrow(da24i)
+
+media_24i <- round(mean(da24i$tempo))
+
+p24i <- da24i |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24i, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24i, " dias"), x = 1200, y = 25), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a pronúncia e a sentença após plenário (N = {n24i})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24i.png",
+  p24i, width = 10, height = 5
 )
 
 # 25 – Colunas O, P e Q: para os processos que foram suspensos com base no art. 366 (resposta “sim” na coluna O), qual o intervalo de duração entre a coluna P (data da suspensão) e a coluna Q (data da revogação da suspensão) =========================================================================
