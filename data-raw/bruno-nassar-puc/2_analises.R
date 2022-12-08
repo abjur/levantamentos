@@ -1839,6 +1839,7 @@ ggplot2::ggsave(
 )
 # 26 – Colunas R e S + AM e NA + AY e AZ: =========================================================================
 da26 <- da |>
+  dplyr::filter(!is.na(plenario_homicidio)) |>
   dplyr::select(
     id_processo,
     denuncia_homicidio,
@@ -1849,6 +1850,7 @@ da26 <- da |>
     plenario_qualificadoras
   )
 
+n26 <- nrow(da26)
 # a) Primeiro, medir quantos casos são homicídios simples em cada um desses momentos (denúncia – pronúncia – sentença) =========================================================================
 n26a <- da26 |>
   dplyr::summarise(
@@ -1983,7 +1985,7 @@ p26b <- da26b |>
   ggplot2::scale_fill_viridis_d(begin = .2, end = .8, direction = 1) +
   ggplot2::facet_grid(tipo~.) +
   ggplot2::labs(
-    title = glue::glue("Incidência de qualificadoras nas três fases do processo: Denúncia, Pronúncia e Plenário (N = {n26b})"),
+    title = glue::glue("Incidência de qualificadoras nas três fases do processo: Denúncia, Pronúncia e Plenário (N = {n26})"),
     x = "Qualificadoras",
     y = "Quantidade de processos"
   )
