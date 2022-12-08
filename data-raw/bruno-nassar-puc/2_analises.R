@@ -1960,7 +1960,8 @@ da26b <- da26 |>
         "Art. 121, §2º, VII"
       )
     )
-  )
+  ) |>
+  dplyr::distinct()
 
 n26b <- da26b |>
   dplyr::distinct(id_processo, tipo) |>
@@ -1976,7 +1977,7 @@ p26b <- da26b |>
   ) |>
   dplyr::ungroup() |>
   ggplot2::ggplot() +
-  ggplot2::aes(x = qualificadoras, y = n, fill = tipo, label = perc) +
+  ggplot2::aes(x = qualificadoras, y = n, fill = tipo, label = n) +
   ggplot2::geom_col(position = "dodge", show.legend = FALSE) +
   ggplot2::geom_label(
     ggplot2::aes(group = tipo), fill = "white",
@@ -1987,7 +1988,7 @@ p26b <- da26b |>
   ggplot2::labs(
     title = glue::glue("Incidência de qualificadoras nas três fases do processo: Denúncia, Pronúncia e Plenário (N = {n26})"),
     x = "Qualificadoras",
-    y = "Quantidade de processos"
+    y = "Incidência das qualificadoras"
   )
 
 ggplot2::ggsave(

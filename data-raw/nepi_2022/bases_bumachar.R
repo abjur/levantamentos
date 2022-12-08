@@ -3,6 +3,7 @@
 da <- obsFase3::da_processo_tidy |>
   dplyr::mutate(info_autofal = stringr::str_to_sentence(info_autofal)) |>
   dplyr::filter(
+    info_autofal == "Sim" |
     info_fal_dec_fund == "Artigo 97-I ou 105 da Lei 11.101/2005 (autofalencia)" |
     info_origem == "Falência requerida pela própria empresa (autofalência)"
   ) |>
@@ -16,6 +17,7 @@ da <- obsFase3::da_processo_tidy |>
     id_processo,
     info_conv = info_conv2,
     info_autofal,
+    info_origem,
     dt_decisao,
     info_fal_dec,
     info_fal_dec_fund,
