@@ -4,6 +4,7 @@
 # base processos ----------------------------------------------------------
 
 da_processos_pedro <- obsFase3::da_processo_tidy |>
+  dplyr::filter(info_digital == "Sim") |>
   dplyr::mutate(
     ano_dist = dplyr::case_when(
       ano_dist == "2018, 2018" ~ "2018",
@@ -14,11 +15,11 @@ da_processos_pedro <- obsFase3::da_processo_tidy |>
     ),
     ano_dist = as.numeric(ano_dist),
     info_fal_acabou = dplyr::coalesce(info_fal_acabou, info_fal_acabou2),
-    dt_arrecadacao = dplyr::coalesce(dt_arrecadacao, dt_arrecadacao2),
-    tempo_dec_assinatura_tc = dt_assinatura_tc - dt_decisao,
-    tempo_assinatura_tc_listcred_devedor = dt_listcred_devedor - dt_assinatura_tc,
-    tempo_listcred_devedor_listcred_aj = dt_listcred_aj - dt_listcred_devedor,
-    tempo_listcred_aj_relatorio = dt_relatorio
+    dt_arrecadacao = dplyr::coalesce(dt_arrecadacao, dt_arrecadacao2)
+    # tempo_dec_assinatura_tc = dt_assinatura_tc - dt_decisao,
+    # tempo_assinatura_tc_listcred_devedor = dt_listcred_devedor - dt_assinatura_tc,
+    # tempo_listcred_devedor_listcred_aj = dt_listcred_aj - dt_listcred_devedor,
+    # tempo_listcred_aj_relatorio = dt_relatorio
   ) |>
   dplyr::select(
     id_processo,
@@ -40,21 +41,26 @@ da_processos_pedro <- obsFase3::da_processo_tidy |>
     info_aj_relatorio,
     dt_relatorio,
     dt_arrecadacao,
-    dplyr::contains("pgto"),
-    tempo_dec_assinatura_tc
-  ) |>
-  dplyr::select(tempo_dec_assinatura_tc)
+    dplyr::contains("pgto")
+  )
 
-
+writexl::write_xlsx(da_processos_pedro, "data-raw/nepi_2022/xlsx/da_pedro_processos.xlsx")
 # base leilao -------------------------------------------------------------
 
-da_leilao_pedro
+processos <- da_processos_pedro |>
+  dplyr::pull(id_processo)
 
-#  Número CNJ do processo
-#  Descrição do item
-#  Modalidade de leilão (leilão / pregão / proposta fechada)
-#  Data do edital de leilão
-#  Valor do lance inicial
-#  Valor avaliado do bem
-#  Bem foi vendido (sim / não)
-#  Valor arrematado
+da_leilao_pedro <- obsFase3::da_leilao_tidy |>
+  dplyr::filter(id_processo %in% processos) |>
+  dplyr::select(
+    id_processo,
+    descricao,
+    modalidade,
+    data_edital,
+    lances_a_partir_de_qual_valor,
+    valor_avaliacao_inicial,
+    vendeu,
+    valor_total_arrematado
+  )
+
+writexl::write_xlsx(da_leilao_pedro, "data-raw/nepi_2022/xlsx/da_pedro_leilao.xlsx")
