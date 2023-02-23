@@ -19,7 +19,8 @@ da <- obsFase3::da_processo_tidy |>
     dt_fal_fim,
     dt_dist,
     info_origem,
-    info_obrig_extin
+    info_obrig_extin,
+    info_fal_dec_nao
   )
 
 writexl::write_xlsx(da, "data-raw/nepi_2022/xlsx/da_maria.xlsx")
