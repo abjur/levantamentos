@@ -557,6 +557,7 @@ n_extincao_punibilidade <- da |>
 p17 <- da |>
   dplyr::filter(natureza_decisao == "Sentença de extinção da punibilidade") |>
   dplyr::mutate(
+    causa_de_extincao_da_punibilidade = ifelse(causa_de_extincao_da_punibilidade == "Cumprimento da pena, após desclassificação", "Cumprimento da pena", causa_de_extincao_da_punibilidade),
     causa_de_extincao_da_punibilidade = forcats::fct_infreq(causa_de_extincao_da_punibilidade)
   ) |>
   grafico_base(causa_de_extincao_da_punibilidade) +
@@ -1467,6 +1468,32 @@ ggplot2::ggsave(
   p24a, width = 10, height = 5
 )
 
+# a.i) Tempo fato até sentença, apenas para Sentença após plenário do júri --------
+
+da24ai <- da24a |>
+  dplyr::filter(natureza_decisao == "Sentença após plenário do júri")
+
+n24ai <- nrow(da24ai)
+
+media_24ai <- round(mean(da24ai$tempo, na.rm = TRUE))
+
+p24ai <- da24ai |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1]) +
+  ggplot2::geom_vline(xintercept = media_24ai, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24ai, " dias"), x = media_24ai + 500, y = 16), color = "red") +
+  ggplot2::scale_y_continuous(breaks = c(0,5,10,15,17)) +
+  ggplot2::labs(
+    title = glue::glue("Tempo de duração do total do processo, isto é, do fato até a sentença (N = {n24ai})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24ai.png",
+  p24ai, width = 10, height = 5
+)
 # b) data do fato até instauração do IP;  -----------------------------------------------------------------------
 da24b <- da |>
   dplyr::mutate(
@@ -2343,10 +2370,11 @@ da27 <- da |>
     pris_prev = dplyr::case_when(
       pris_prev == "Não" ~ "Não",
       pris_prev == "Não consta" ~ "Não consta",
-      stringr::str_detect(pris_prev, "Sim") ~ "Sim"
+      # stringr::str_detect(pris_prev, "Sim") ~ "Sim"
+      TRUE ~ pris_prev
     ),
     prisao = dplyr::case_when(
-      flagrante == "Sim" | pris_prev == "Sim" ~ "Sim",
+      flagrante == "Sim" | stringr::str_detect(pris_prev, "Sim") ~ "Sim",
       is.na(flagrante) & is.na(pris_prev) ~ NA_character_,
       TRUE ~ "Não"
     ),
@@ -2392,32 +2420,49 @@ ggplot2::ggsave(
 )
 
 # b) Em quantos casos houve preventiva (coluna W) -----------------------------------------------------------------------
-p27b <- da27 |>
+t27b_resumo <- da27 |>
+  dplyr::filter(!is.na(pris_prev)) |>
+  dplyr::mutate(
+    pris_prev_resumo = dplyr::case_when(
+      pris_prev == "Não" ~ "Não",
+      pris_prev == "Não consta" ~ "Não consta",
+      stringr::str_detect(pris_prev, "Sim") ~ "Sim"
+    ),
+    pris_prev_resumo = forcats::fct_infreq(pris_prev_resumo)
+  ) |>
+  dplyr::count(pris_prev_resumo) |>
+  dplyr::arrange(n) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    prop = formattable::percent(prop),
+    pris_prev = forcats::fct_relevel(pris_prev_resumo, "Não consta", after=Inf)
+  ) |>
+  dplyr::arrange(pris_prev)
+
+googlesheets4::write_sheet(
+  t27b_resumo,
+  link,
+  "t27b_resumo"
+)
+
+t27b_completa <-  da27 |>
   dplyr::filter(!is.na(pris_prev)) |>
   dplyr::mutate(
     pris_prev = forcats::fct_infreq(pris_prev)
   ) |>
   dplyr::count(pris_prev) |>
+  dplyr::arrange(n) |>
   dplyr::mutate(
     prop = n/sum(n),
-    perc = formattable::percent(prop),
-    col_dif = pris_prev == "Não consta",
+    prop = formattable::percent(prop),
     pris_prev = forcats::fct_relevel(pris_prev, "Não consta", after=Inf)
   ) |>
-  ggplot2::ggplot() +
-  ggplot2::aes(x = pris_prev, y = n, label = perc) +
-  ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
-  ggplot2::geom_label() +
-  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
-  ggplot2::labs(
-    title = "Casos de prisão preventiva",
-    x = "Houve prisão preventiva?",
-    y = "Quantidade de casos"
-  )
+  dplyr::arrange(pris_prev)
 
-ggplot2::ggsave(
-  "data-raw/bruno-nassar-puc/img/p27b.png",
-  p27b, width = 7, height = 6
+googlesheets4::write_sheet(
+  t27b_completa,
+  link,
+  "t27b_completa"
 )
 
 # c) Coluna Y: nos casos em que houve prisão (flagrante ou preventiva), em quantos houve relaxamento da prisão? E em quantos o réu ficou preso até o fim do processo? -----------------------------------------------------------------------
@@ -2964,6 +3009,7 @@ ggplot2::ggsave(
 
 # 29 – Tempo de duração do processo X colunas variadas = basicamente, comparar o tempo de duração do processo conforme: =========================================================================
 da29 <- da |>
+  dplyr::filter(natureza_decisao == "Sentença após plenário do júri") |>
   dplyr::transmute(
     id_processo,
     tempo = as.numeric(dt_plenario - dt_fato),
