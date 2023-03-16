@@ -15,6 +15,7 @@ da_processos_joice <- obsFase3::da_processo_tidy |>
     aj_tipo_remu,
     aj_caucao,
     info_fal_extin_caucao,
+    info_fal_acabou,
     dplyr::contains("pgto")
   )
 
