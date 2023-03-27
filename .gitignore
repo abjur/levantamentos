@@ -52,3 +52,5 @@ data-raw/justica-gratuita/decisoes_total.csv
 data-raw/justica-gratuita/decisoes.csv
 data-raw/justica-gratuita/dados/
 data-raw/pericia-papiloscopica/tjsp_cjpg/
+data-raw/fernando_viana_empresariais/tjsp_cpopg/
+data-raw/fernando_viana_empresariais/*.rds
