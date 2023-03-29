@@ -10,7 +10,7 @@ lex::tjsp_cjpg_download(
   busca = "",
   dir = "data-raw/fernanda-portella/cjpg",
   assunto = assuntos,
-  classe = classes)
+  classe = classes
 )
 
 da_cjpg <- fs::dir_ls("data-raw/fernanda-portella/cjpg/") |>
@@ -20,6 +20,7 @@ da_cjpg <- fs::dir_ls("data-raw/fernanda-portella/cjpg/") |>
 readr::write_rds(da_cjpg, "data-raw/fernanda-portella/da_cjpg.rds")
 
 # cpopg -------------------------------------------------------------------
+da_cjpg <- readr::read_rds("data-raw/fernanda-portella/da_cjpg.rds")
 processos <- da_cjpg |>
   # dplyr::mutate(
   #   ano = lubridate::dmy(data_de_disponibilizacao),
@@ -41,7 +42,6 @@ da_cpopg <- fs::dir_ls("data-raw/fernanda-portella/cpopg/") |>
   purrr::map_dfr(lex::tjsp_cpopg_parse)
 
 readr::write_rds(da_cpopg, "data-raw/fernanda-portella/da_cpopg.rds")
-
 
 # filter ------------------------------------------------------------------
 
