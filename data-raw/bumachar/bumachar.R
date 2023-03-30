@@ -7,7 +7,6 @@
 # Tentar tirar confissão (iniciativa do credor / convolação);
 # eventualmente dividir iniciativa / convolação.
 
-
 # I - preparacao --------------------------------------------------------------------
 # base
 da_avaliacao <- obsFase3::da_avaliacao_tidy |>
@@ -76,45 +75,7 @@ sobrevivencia <- function(da, var) {
 }
 
 
-# II - resumos (mediana) -------------------------------------------------------
-
-da_resumo_todos <- da |>
-  dplyr::summarise(
-    info_origem_min = "Credor / Convolação",
-    tempo_decretacao_lista_aj = median(tempo_decretacao_lista_aj, na.rm = TRUE),
-    tempo_decretacao_avaliacao = median(tempo_decretacao_avaliacao, na.rm = TRUE),
-    tempo_decretacao_liquidacao = median(tempo_decretacao_liquidacao, na.rm = TRUE),
-    tempo_decretacao_encerramento = median(tempo_decretacao_encerramento, na.rm = TRUE)
-)
-
-da_mediana_resumo <- da |>
-  dplyr::group_by(info_origem_min) |>
-  dplyr::summarise(
-    tempo_decretacao_lista_aj = median(tempo_decretacao_lista_aj, na.rm = TRUE),
-    tempo_decretacao_avaliacao = median(tempo_decretacao_avaliacao, na.rm = TRUE),
-    tempo_decretacao_liquidacao = median(tempo_decretacao_liquidacao, na.rm = TRUE),
-    tempo_decretacao_encerramento = median(tempo_decretacao_encerramento, na.rm = TRUE)
-  ) |>
-  dplyr::ungroup() |>
-  dplyr::bind_rows(da_resumo_todos) |>
-  dplyr::mutate(
-    dplyr::across(
-      dplyr::contains("tempo_"),
-      ~abjDash::tempo_lab(.x/365.25)
-      # ~paste0(.x, " dias")
-    )
-  ) # |>
-  # knitr::kable(
-  #   col.names = c(
-  #     "Tipo de falência",
-  #     "Tempo decretação - lista mais recente do AJ",
-  #     "Tempo decretação - 1a avaliação",
-  #     "Tempo decretação - 1a liquidação",
-  #     "Tempo decretação - encerramento"
-  #   )
-  # )
-
-# III.A - sobrevivencia (credor) -----------------------------------------------------------
+# II.A - sobrevivencia (credor) -----------------------------------------------------------
 
 da_credor <- da |>
   dplyr::filter(
@@ -131,13 +92,9 @@ da_sobrevivencia_credor <- tibble::tibble(
   tempo_decretacao_avaliacao = sobrevivencia(da_credor, dt_avaliacao),
   tempo_decretacao_liquidacao = sobrevivencia(da_credor, dt_leilao),
   tempo_decretacao_encerramento = sobrevivencia(da_credor, dt_extincao)
-) |>
-  dplyr::mutate(dplyr::across(
-    dplyr::contains("tempo_"),
-    ~abjDash::tempo_lab(.x/365.25)
-  ))
+)
 
-# III.B - sobrevivencia (convolação) -----------------------------------------------------------
+# II.B - sobrevivencia (convolação) -----------------------------------------------------------
 
 da_conv <- da |>
   dplyr::filter(
@@ -152,13 +109,9 @@ da_sobrevivencia_convolacao <- tibble::tibble(
   tempo_decretacao_avaliacao = sobrevivencia(da_conv, dt_avaliacao),
   tempo_decretacao_liquidacao = sobrevivencia(da_conv, dt_leilao),
   tempo_decretacao_encerramento = sobrevivencia(da_conv, dt_extincao)
-) |>
-  dplyr::mutate(dplyr::across(
-    dplyr::contains("tempo_"),
-    ~abjDash::tempo_lab(.x/365.25)
-  ))
+)
 
-# III.C - sobrevivencia (todos) -----------------------------------------------------------
+# II.C - sobrevivencia (todos) -----------------------------------------------------------
 da_todos <- da |>
   dplyr::mutate(
     manter = dplyr::case_when(
@@ -182,15 +135,42 @@ da_sobrevivencia_todos <- tibble::tibble(
   tempo_decretacao_avaliacao = sobrevivencia(da_todos, dt_avaliacao),
   tempo_decretacao_liquidacao = sobrevivencia(da_todos, dt_leilao),
   tempo_decretacao_encerramento = sobrevivencia(da_todos, dt_extincao)
-) |>
+)
+
+
+
+# II.D - sobrevivencia (geral) ------------------------------------------
+da_sobrevivencia_resumo <- da_sobrevivencia_credor |>
+  dplyr::bind_rows(da_sobrevivencia_convolacao) |>
+  dplyr::bind_rows(da_sobrevivencia_todos) |>
   dplyr::mutate(dplyr::across(
     dplyr::contains("tempo_"),
     ~abjDash::tempo_lab(.x/365.25)
   ))
 
+writexl::write_xlsx(da_sobrevivencia_resumo, "data-raw/bumachar/da_sobrevivencia_resumo.xlsx")
 
+# III - base para Bumachar ------------------------------------------------
 
-# III.D - sobrevivencia (geral) ------------------------------------------
-da_sobrevivencia_resumo <- da_sobrevivencia_credor |>
-  dplyr::bind_rows(da_sobrevivencia_convolacao) |>
-  dplyr::bind_rows(da_sobrevivencia_todos)
+da_bumachar <- da |>
+  dplyr::mutate(
+    manter = dplyr::case_when(
+      # condições do credor
+      info_origem_min == "Credor" &
+        info_fal_dec == "Sim" &
+        info_fal_extin_caucao == "Não" &
+        info_leilao_justif_min != "Arrecadação de bens negativa" ~ TRUE,
+      # condições da conv
+      info_origem_min == "Convolação" &
+        info_leilao_justif_min != "Arrecadação de bens negativa" ~ TRUE,
+      TRUE ~ FALSE
+    )
+  ) |>
+  dplyr::filter(manter) |>
+  dplyr::select(
+    id_processo,
+    info_origem_min,
+    dplyr::contains("tempo_")
+  )
+
+writexl::write_xlsx(da_bumachar, "data-raw/bumachar/da_bumachar.xlsx")
