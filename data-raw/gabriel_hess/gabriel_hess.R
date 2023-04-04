@@ -14,7 +14,7 @@
 da_rjsp <- obsFase2::da_relatorio |>
   dplyr::transmute(
     id_processo = n_processo,
-    rj = "SP",
+    origem = "SP",
     dt_dist = dplyr::coalesce(data_dist, data_dist2),
     cnpj = stringr::str_remove_all(cnpj, "\\.|\\/|-"),
     aj_nome = NA_character_,
@@ -59,7 +59,7 @@ da_rjrj <- obsRJRJ::da_processo_tidy |>
   dplyr::left_join(partes_rjrj) |>
   dplyr::transmute(
     id_processo,
-    rj = "RJ",
+    origem = "RJ",
     dt_dist = data_dist,
     cnpj,
     aj_nome,
@@ -102,7 +102,7 @@ da_rjrs <- obsRJRS::da_processo_tidy |>
   dplyr::left_join(partes_rjrs) |>
   dplyr::transmute(
     id_processo,
-    rj = "RS",
+    origem = "RS",
     dt_dist = data_dist,
     cnpj,
     aj_nome,
