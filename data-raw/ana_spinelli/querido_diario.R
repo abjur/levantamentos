@@ -72,3 +72,9 @@ diarios_termo <- purrr::map(diarios_disponiveis$territory_id, get_gazettes) |>
   dplyr::bind_rows()
 
 readr::write_rds(diarios_termo, "data-raw/ana_spinelli/diarios_termo.rds")
+
+diarios_termo <- readr::read_rds("data-raw/ana_spinelli/diarios_termo.rds")
+
+diarios_termo |>
+  tidyr::unnest(excerpts) |>
+  writexl::write_xlsx("data-raw/ana_spinelli/diarios_termo.xlsx")
