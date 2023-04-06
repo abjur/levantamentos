@@ -659,26 +659,49 @@ da18d <- da18 |>
   dplyr::mutate(
     tempo_sentenca_plenario = as.numeric(dt_plenario - dt_pronuncia)
   ) |>
-  dplyr::select(id_processo, tempo_sentenca_plenario) |>
+  dplyr::select(id_processo, tempo_sentenca_plenario, pronuncia_rese) |>
   dplyr::filter(tempo_sentenca_plenario >= 0)
 
-media_pronuncia_plenario <- round(mean(da18d$tempo_sentenca_plenario))
+mediana_pronuncia_plenario <- da18d |>
+  dplyr::group_by(pronuncia_rese) |>
+  dplyr::summarise(
+    mediana = floor(median(tempo_sentenca_plenario))
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(
+    mediana_txt = glue::glue("{mediana} dias"),
+    pronuncia_rese = dplyr::case_when(
+      pronuncia_rese == "Não" ~ "Sem RESE",
+      pronuncia_rese == "Sim" ~ "Com RESE"
+    )
+  )
 
 p18d <- da18d |>
+  dplyr::mutate(
+    pronuncia_rese = dplyr::case_when(
+      pronuncia_rese == "Não" ~ "Sem RESE",
+      pronuncia_rese == "Sim" ~ "Com RESE"
+    )
+  ) |>
   ggplot2::ggplot() +
   ggplot2::aes(x = tempo_sentenca_plenario) +
   ggplot2::geom_histogram(fill = cores_abj[1], bins = 60) +
-  ggplot2::geom_vline(xintercept = media_pronuncia_plenario, color = "red", linetype = 2) +
+  ggplot2::facet_wrap(.~pronuncia_rese) +
+  ggplot2::geom_vline(
+    data = mediana_pronuncia_plenario,
+    mapping = ggplot2::aes(xintercept = mediana),
+    color = "red", linetype = 2) +
   ggplot2::geom_text(
-    ggplot2::aes(
-      label = paste0(media_pronuncia_plenario, " dias"),
-      x = media_pronuncia_plenario + 70,
-      y = 5.2
+    data = mediana_pronuncia_plenario,
+    mapping = ggplot2::aes(
+      label = mediana_txt,
+      x = mediana + 700,
+      y = 10
     ),
     color = "red"
   ) +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a decisão de pronúncia e o plenário\n(N = {n_plenario})"),
+    title = glue::glue("Tempo entre a decisão de pronúncia e o plenário, a depender do recurso\n(N = {n_plenario})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
@@ -795,23 +818,19 @@ ggplot2::ggsave(
 )
 
 # e) Coluna AU: para os casos com resultado “desclassificação” na coluna AT, qual foi o resultado do julgamento? -----------------------------------------------------------------------
-n19d <- da19 |>
-  dplyr::filter(julgamento == "Desclassificação") |>
-  nrow()
-
-p19e <- da19 |>
+t19e <- da19 |>
   dplyr::filter(julgamento == "Desclassificação") |>
   dplyr::mutate(desclassificacao = forcats::fct_infreq(desclassificacao)) |>
-  grafico_base(desclassificacao) +
-  ggplot2::labs(
-    title = glue::glue("Natureza da defesa mudada (N = {n19d})"),
-    x = "Tipo de defesa",
-    y = "Quantidade de processos"
+  dplyr::count(desclassificacao) |>
+  dplyr::mutate(
+    prop = n/sum(n),
+    prop = formattable::percent(prop)
   )
 
-ggplot2::ggsave(
-  "data-raw/bruno-nassar-puc/img/p19e.png",
-  p19e, width = 7, height = 6
+googlesheets4::write_sheet(
+  t19e,
+  link,
+  "t19e"
 )
 
 # 20 – Processos que tiveram resultado condenação após plenário (resposta “condenação sobre crime de homicídio” na coluna AT): =========================================================================
@@ -2384,7 +2403,7 @@ da27 <- da |>
       pris_prev == "Sim" ~ "Preventiva",
       prisao == "Não" ~ NA_character_
     ),
-    liberdade = dplyr::case_when(
+    liberdade_min = dplyr::case_when(
       liberdade == "Não" ~ "Não",
       liberdade == "Não consta" ~ "Não consta",
       is.na(liberdade) ~ "Não consta",
@@ -2394,7 +2413,9 @@ da27 <- da |>
   )
 
 # a) Em quantos casos houve flagrante (coluna V) -----------------------------------------------------------------------
-p27a <- da27 |>
+# a.i) --------------------------------------------------------------------
+
+p27ai <- da27 |>
   dplyr::filter(!is.na(flagrante)) |>
   dplyr::count(flagrante) |>
   dplyr::mutate(
@@ -2415,13 +2436,47 @@ p27a <- da27 |>
   )
 
 ggplot2::ggsave(
-  "data-raw/bruno-nassar-puc/img/p27a.png",
-  p27a, width = 7, height = 6
+  "data-raw/bruno-nassar-puc/img/p27ai.png",
+  p27ai, width = 7, height = 6
+)
+
+
+# a.ii)  Quantos casos de flagrante foram convertidos em preventiva? ------------------------------------------------------------------
+p27aii <- da27 |>
+  dplyr::filter(
+    flagrante == "Sim",
+    pris_prev %in% c("Não", "Sim, o flagrante foi convertido em preventiva")
+  ) |>
+  dplyr::count(flagrante, pris_prev) |>
+  dplyr::mutate(
+    pris_prev = dplyr::case_when(
+      pris_prev == "Sim, o flagrante foi convertido em preventiva" ~ "Sim",
+      TRUE ~ pris_prev
+    ),
+    prop = n/sum(n),
+    perc = formattable::percent(prop)
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = pris_prev, y = n, label = perc) +
+  ggplot2::geom_col(fill = cores_abj[1]) +
+  ggplot2::geom_label() +
+  ggplot2::labs(
+    title = "Conversão do flagrante em preventiva",
+    x = "O flagrante foi convertido em prisão preventiva?",
+    y = "Quantidade de casos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p27aii.png",
+  p27aii, width = 7, height = 6
 )
 
 # b) Em quantos casos houve preventiva (coluna W) -----------------------------------------------------------------------
 t27b_resumo <- da27 |>
-  dplyr::filter(!is.na(pris_prev)) |>
+  dplyr::filter(
+    !is.na(pris_prev),
+    !id_processo %in% c("00057558420168260635", "15014989120198260228")
+  ) |>
   dplyr::mutate(
     pris_prev_resumo = dplyr::case_when(
       pris_prev == "Não" ~ "Não",
@@ -2435,9 +2490,9 @@ t27b_resumo <- da27 |>
   dplyr::mutate(
     prop = n/sum(n),
     prop = formattable::percent(prop),
-    pris_prev = forcats::fct_relevel(pris_prev_resumo, "Não consta", after=Inf)
+    pris_prev_resumo = forcats::fct_relevel(pris_prev_resumo, "Não consta", after=Inf)
   ) |>
-  dplyr::arrange(pris_prev)
+  dplyr::arrange(pris_prev_resumo)
 
 googlesheets4::write_sheet(
   t27b_resumo,
@@ -2446,7 +2501,10 @@ googlesheets4::write_sheet(
 )
 
 t27b_completa <-  da27 |>
-  dplyr::filter(!is.na(pris_prev)) |>
+  dplyr::filter(
+    !is.na(pris_prev),
+    !id_processo %in% c("00057558420168260635", "15014989120198260228")
+  ) |>
   dplyr::mutate(
     pris_prev = forcats::fct_infreq(pris_prev)
   ) |>
@@ -2467,29 +2525,32 @@ googlesheets4::write_sheet(
 
 # c) Coluna Y: nos casos em que houve prisão (flagrante ou preventiva), em quantos houve relaxamento da prisão? E em quantos o réu ficou preso até o fim do processo? -----------------------------------------------------------------------
 p27c <- da27 |>
+  dplyr::filter(!is.na(liberdade)) |>
   dplyr::mutate(
+    liberdade = dplyr::case_when(
+      liberdade == "Sim, por decisão que concedeu liberdade provisória" ~ "Sim, liberdade provisória",
+      liberdade == "Sim, por concessão de ordem de Habeas Corpus" ~ "Sim, Habeas Corpus",
+      liberdade == "Sim, o flagrante foi relaxado" ~ "Sim, flagrante relaxado",
+      TRUE ~ liberdade
+    ),
     liberdade = forcats::fct_infreq(liberdade),
     liberdade = forcats::fct_relevel(liberdade, "Não consta", after=Inf)
   ) |>
-  dplyr::filter(prisao == "Sim") |>
-  dplyr::count(prisao, tipo_prisao, liberdade) |>
-  dplyr::group_by(tipo_prisao) |>
+  dplyr::count(liberdade) |>
   dplyr::mutate(
     prop = n/sum(n),
     perc = formattable::percent(prop),
     col_dif = liberdade == "Não consta"
   ) |>
-  dplyr::ungroup() |>
   ggplot2::ggplot() +
   ggplot2::aes(x = liberdade, y = n, label = perc) +
   ggplot2::geom_col(ggplot2::aes(fill = col_dif), show.legend = FALSE) +
   ggplot2::geom_label() +
-  ggplot2::facet_wrap(.~tipo_prisao, scales = "free_y") +
-  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70")) +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], "gray70"))  +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(20)) +
   ggplot2::labs(
-    title = "Relaxamento da prisão, a depender do motivo da prisão",
-    x = "Houve relaxamento da prisão?",
-    y = "Quantidade de casos"
+    y = "Quantidade de casos",
+    x = "Se preso, o réu foi colocado em liberdade?"
   )
 
 ggplot2::ggsave(
@@ -2502,7 +2563,7 @@ da27d <- da27 |>
   dplyr::mutate(
     tempo = dt_soltura - dt_pris_prev
   ) |>
-  dplyr::filter(liberdade == "Sim", tempo >= 0)
+  dplyr::filter(liberdade_min == "Sim", tempo >= 0)
 
 n_27d <- nrow(da27d)
 
@@ -3775,4 +3836,96 @@ p31i <- da31 |>
 ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p31i.png",
   p31i, width = 10, height = 5
+)
+
+
+# 32 - conjunto de variáveis relacionada aos casos em que houve recurso e as decisões sobre prisão --------
+
+# a) RESE e prisão  ---------------------------------------------------------------------
+n32a <- da |>
+  dplyr::filter(
+    liberdade %in% c("Não",
+                     "Sim, por concessão de ordem de Habeas Corpus",
+                     "Sim, por decisão que concedeu liberdade provisória"),
+    pronuncia_rese == "Sim",
+    pris_prev %in% c("Sim, a prisão foi decretada em outro momento processual",
+                     "Sim, a prisão foi decretada na pronúncia",
+                     "Sim, a prisão foi decretada no recebimento da denúncia",
+                     "Sim, a temporária foi convertida em preventiva",
+                     "Sim, o flagrante foi convertido em preventiva")
+  ) |>
+  nrow()
+
+p32a <- da |>
+  dplyr::filter(
+    liberdade %in% c("Não",
+                     "Sim, por concessão de ordem de Habeas Corpus",
+                     "Sim, por decisão que concedeu liberdade provisória"),
+    pronuncia_rese == "Sim",
+    pris_prev %in% c("Sim, a prisão foi decretada em outro momento processual",
+                     "Sim, a prisão foi decretada na pronúncia",
+                     "Sim, a prisão foi decretada no recebimento da denúncia",
+                     "Sim, a temporária foi convertida em preventiva",
+                     "Sim, o flagrante foi convertido em preventiva")
+  ) |>
+  dplyr::mutate(
+    liberdade = forcats::fct_infreq(liberdade)
+  ) |>
+  grafico_base(liberdade) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(30)) +
+  ggplot2::labs(
+    title = glue::glue("RESE e prisão (N = {n32a})"),
+    y = "Quantidade de casso",
+    x = "Nos casos em que houve RESE, houve também relaxamento da prisão?"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p32a.png",
+  p32a, width = 10, height = 5
+)
+
+
+# b)  ---------------------------------------------------------------------
+# Coluna BF, especificamente as respostas que são “não” + Coluna BG, especificamente as respostas que são “sim”. Ou seja, a ideia é verificar em quantos processos em que houve recurso de apelação o réu estava preso.
+
+n32b <-  da |>
+  dplyr::filter(
+    liberdade %in% c("Não",
+                     "Sim, por concessão de ordem de Habeas Corpus",
+                     "Sim, por decisão que concedeu liberdade provisória",
+                     "Sim, na sentença"),
+    pris_prev %in% c("Sim, a prisão foi decretada em outro momento processual",
+                     "Sim, a prisão foi decretada na pronúncia",
+                     "Sim, a prisão foi decretada no recebimento da denúncia",
+                     "Sim, a temporária foi convertida em preventiva",
+                     "Sim, o flagrante foi convertido em preventiva",
+                     "Sim, na sentença"),
+    recurso == "Sim"
+  ) |> nrow()
+
+p32b <- da |>
+  dplyr::filter(
+    liberdade %in% c("Não",
+                     "Sim, por concessão de ordem de Habeas Corpus",
+                     "Sim, por decisão que concedeu liberdade provisória",
+                     "Sim, na sentença"),
+    pris_prev %in% c("Sim, a prisão foi decretada em outro momento processual",
+                     "Sim, a prisão foi decretada na pronúncia",
+                     "Sim, a prisão foi decretada no recebimento da denúncia",
+                     "Sim, a temporária foi convertida em preventiva",
+                     "Sim, o flagrante foi convertido em preventiva",
+                     "Sim, na sentença"),
+    recurso == "Sim"
+  ) |>
+  grafico_base(liberdade) +
+  ggplot2::scale_x_discrete(labels=scales::label_wrap(30)) +
+  ggplot2::labs(
+    title = glue::glue("Apelação e prisão (N = {n32b})"),
+    y = "Quantidade de casso",
+    x = "Nos casos em que houve apelação, houve também relaxamento da prisão?"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p32b.png",
+  p32b, width = 10, height = 5
 )

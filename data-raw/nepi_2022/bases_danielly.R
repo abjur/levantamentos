@@ -30,13 +30,9 @@ partes <- obsFase3::da_processo_tidy |>
   tidyr::unnest(planilha_partes)
 
 pessoas_naturais <- partes |>
-  dplyr::filter(info_fal == "Sim", info_fal_dec_min == "Sim") |>
-  dplyr::select(
-    id_processo,
-    info_digital,
-    nome,
-    polo,
-    cnpj
+  dplyr::filter(
+    info_fal == "Sim",
+    info_fal_dec_min == "Sim" # esperar resposta do email
   ) |>
   dplyr::mutate(
     polo = dplyr::case_when(
@@ -50,7 +46,6 @@ pessoas_naturais <- partes |>
   dplyr::mutate(
     cnpj = stringr::str_squish(cnpj),
     cnpj =  stringr::str_remove_all(cnpj, "\\.|\\/|-| |[a-z]|[A-Z]"),
-    # cnpj = stringr::str_split(cnpj, pattern = stringr::regex(",|;"))
     cpf = stringr::str_length(cnpj) == 11
   ) |>
   dplyr::left_join(obsFase3::aux_rfb) |>
@@ -59,28 +54,17 @@ pessoas_naturais <- partes |>
       porte_empresa == "ME" ~ TRUE,
       stringr::str_detect(nome, stringr::regex("epp$", TRUE)) ~ TRUE,
       TRUE ~ FALSE
-    )
-  ) |>
-  dplyr::select(
-    id_processo,
-    info_digital,
-    nome,
-    polo,
-    cnpj,
-    cpf,
-    porte_empresa,
-    me_epp
-  ) |>
-  dplyr::mutate(
+    ),
     manter = dplyr::case_when(
-      # cpf ~ TRUE,
+      # cpf ~ TRUE, # esperando email. Isso só muda se info_fal_dec considerar os "Não". Caso contrário, pode apagar esta linha
       me_epp ~ TRUE,
-      # info_digital == "Sim" & is.na(nome) ~ TRUE,
+      # info_digital == "Sim" & is.na(nome) ~ TRUE, # esperando email. Isso muda sempre.
       TRUE ~ FALSE
     )
   ) |>
   dplyr::filter(manter) |>
-  dplyr::distinct(id_processo) |>  dplyr::pull()
+  dplyr::distinct(id_processo) |>
+  dplyr::pull()
 
 da_danielly <- obsFase3::da_processo_tidy |>
   dplyr::filter(id_processo %in% pessoas_naturais) |>
