@@ -3,7 +3,7 @@
 # rjsp --------------------------------------------------------------------
 
 da_rjsp <- obsFase2::da_relatorio |>
-  dplyr::filter(epp_ou_me == "Empresa de Pequeno Porte (EPP)" | epp_ou_me == "Micro Empresa (ME)") |>
+  # dplyr::filter(epp_ou_me == "Empresa de Pequeno Porte (EPP)" | epp_ou_me == "Micro Empresa (ME)") |>
   dplyr::mutate(
     plano_desfecho = dplyr::case_when(
       resultado_final == "Aprovação do plano" ~ "O plano foi aprovado",
@@ -81,7 +81,7 @@ processos_f_epp_me <- obsFase3::aux_polo_ativo_cnpj |>
   dplyr::pull(id_processo)
 
 da_fsp <- obsFase3::da_processo_tidy |>
-  dplyr::filter(id_processo %in% processos_f_epp_me) |>
+  # dplyr::filter(id_processo %in% processos_f_epp_me) |>
   dplyr::select(
     id_processo,
     ano_dist,
@@ -110,11 +110,10 @@ processos_rjrj_epp_me <- obsRJRJ::da_parte_tidy |>
   dplyr::filter(
     stringr::str_detect(nome, "EPP") |
       porte_empresa == "ME") |>
-  dplyr::pull(id_processo) |>
-  dplyr
+  dplyr::pull(id_processo)
 
 da_rjrj <- obsRJRJ::da_processo_tidy |>
-  dplyr::filter(id_processo %in% processos_rjrj_epp_me) |>
+  # dplyr::filter(id_processo %in% processos_rjrj_epp_me) |>
   dplyr::transmute(
     id_processo,
     ano_dist,
@@ -411,7 +410,7 @@ processos_rjrs_epp_me <- c("00092282620188210028",
 # eu tirei esses números do servidor, mas eu não consegui subir no git certinho... Por isso eu copiei e colei pra cá
 
 da_rjrs <- obsRJRS::da_processo_tidy |>
-  dplyr::filter(id_processo %in% processos_rjrs_epp_me) |>
+  # dplyr::filter(id_processo %in% processos_rjrs_epp_me) |>
   dplyr::transmute(
     id_processo,
     ano_dist,

@@ -31,8 +31,8 @@ partes <- obsFase3::da_processo_tidy |>
 
 pessoas_naturais <- partes |>
   dplyr::filter(
-    info_fal == "Sim",
-    info_fal_dec_min == "Sim" # esperar resposta do email
+    info_fal == "Sim"
+    # info_fal_dec_min == "Sim" # esperar resposta do email
   ) |>
   dplyr::mutate(
     polo = dplyr::case_when(
@@ -56,9 +56,9 @@ pessoas_naturais <- partes |>
       TRUE ~ FALSE
     ),
     manter = dplyr::case_when(
-      # cpf ~ TRUE, # esperando email. Isso só muda se info_fal_dec considerar os "Não". Caso contrário, pode apagar esta linha
+      cpf ~ TRUE,
       me_epp ~ TRUE,
-      # info_digital == "Sim" & is.na(nome) ~ TRUE, # esperando email. Isso muda sempre.
+      # info_digital == "Sim" & is.na(nome) ~ TRUE,
       TRUE ~ FALSE
     )
   ) |>
