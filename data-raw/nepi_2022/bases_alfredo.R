@@ -51,7 +51,12 @@ obsFase3::da_processo_tidy |>
   writexl::write_xlsx("data-raw/nepi_2022/xlsx/da_alfredo_processos_encerrados.xlsx")
 
 # pagamento
+classes <- paste(
+  "pgto",
+  c("trib", "trab", "especial", "geral", "quiro", "subquiro", "prio", "extra"),
+  sep = "_"
+)
 obsFase3::da_processo_tidy |>
-  dplyr::filter(!dplyr::if_all(dplyr::contains("pgto"), is.na)) |>
+  dplyr::filter(!dplyr::if_all(dplyr::contains(classes), is.na)) |>
   dplyr::select(all_of(vars)) |>
   writexl::write_xlsx("data-raw/nepi_2022/xlsx/da_alfredo_pagamento.xlsx")
