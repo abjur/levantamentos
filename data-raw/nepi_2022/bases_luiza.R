@@ -19,7 +19,8 @@ da_luiza <- obsFase3::da_processo_tidy |>
     listcred_aj_val,
     dt_listcred_aj,
     dt_extincao,
-    info_fal_extin_caucao
+    info_fal_extin_caucao,
+    dt_decisao
   )
 
 writexl::write_xlsx(da_luiza, "data-raw/nepi_2022/xlsx/da_luiza.xlsx")
