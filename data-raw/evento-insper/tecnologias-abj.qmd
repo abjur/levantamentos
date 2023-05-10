@@ -1,0 +1,140 @@
+---
+title: "Tecnologias ABJ"
+author: 
+  - Julio Trecenti
+  - Renata Hirota
+  - Ricardo Feliz
+format: 
+  revealjs:
+      logo: "img/logo-abj-colorido.png"
+      theme: [default, css/custom-css.scss]
+      slide-number: c/t
+      show-slide-number: all
+      mainfont: Yaldevi
+editor: visual
+lang: pt
+title-slide-attributes: 
+  data-background-color: "#233262"
+  border-start-end-radius: 50%;
+  writing-mode: vertical-rl;
+  preview-links: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  fig.align = "center",
+  out.width = "90%",
+  message = FALSE,
+  warning = FALSE
+)
+
+cores_abj <-  viridis::viridis(2, 1, .2, .8)
+
+```
+
+# Pacotes
+
+## [abjutils](https://github.com/abjur/abjutils)
+
+:::: columns
+::: {.column width='20%'} 
+```{r}
+knitr::include_graphics("img/abjutils.png")
+```
+:::
+
+::: {.column width='80%'} 
+**motivação:** Compilar funções úteis e muito recorrentes ao tratar de dados jurídicos
+
+::: {style="font-size: 20px;"}
+Function           | Description
+------------------ | ------------------------------------------------
+`clean_cnj()`      | Remove non-numeric characters from a string
+`clean_id()`       | Remove separators from an ID
+`pattern_cnj()`    | Regex pattern to find IDs
+`reais()`          | Convert BRL strings into numbers
+`rm_accent()`      | Remove diacritics from a string
+`sample_cnj()`     | Create a random sample of IDs
+`separate_cnj()`   | Separate a column of IDs into 6 columns with its components
+`verify_cnj()`     | Check if ID conforms with CNJ's standard
+:::
+
+:::
+::::
+
+## [abjData](https://github.com/abjur/abjData)
+
+:::: columns
+::: {.column width='20%'} 
+```{r}
+knitr::include_graphics("img/abjData.png")
+```
+:::
+
+::: {.column width='80%'} 
+**motivação:** Compilar bases de dados frequentemente utilizadas pela ABJ
+
+::: {style="font-size: 20px;"}
+Dataset      | Description
+----------|----------
+`assuntos`| Data that contains information about case types.
+`cadmun`  | (LEGACY) A dataset that contains the municipality codes.
+`muni`  | Useful data from municipalities to join with other databases.
+`pnud_muni`| A dataset containing UNDP information from municipalities by years.
+`pnud_min`| Minimal base of UNDP municipalities to make quick studies.
+`pnud_siglas`| A dataset that serves as a glossary of available acronyms. 
+`pnud_uf`| A dataset that contains information about UNDP of Federative Units.
+:::
+
+:::
+::::
+
+## [forosCNJ](https://github.com/abjur/forosCNJ)
+
+:::: columns
+::: {.column width='20%'} 
+```{r}
+knitr::include_graphics("img/forosCNJ.png")
+```
+:::
+
+::: {.column width='80%'} 
+**motivação:** disponibilizar bases de dados e documentação do projeto de levantamento das comarcas e códigos do Brasil.
+
+
+::: {style="font-size: 19px;"}
+```{r}
+forosCNJ::da_foro_comarca |>  
+  dplyr::arrange(comarca) |> 
+  dplyr::filter(id_justica == 8) |> 
+  dplyr::filter(!is.na(ibge)) |> 
+  dplyr::sample_n(7) |> 
+  knitr::kable(
+    format = "html", escape = FALSE,
+    table.attr = "class=\"striped\""
+  )
+```
+:::
+
+:::
+::::
+
+
+## [tpur](https://github.com/abjur/tpur) (em desenvolvimento)
+
+```{r}
+knitr::include_graphics("img/tpu.png")
+```
+
+**motivação:** Compilar os códigos das Tabelas Processuais Unificadas e criar uma maneira fácil de listar os códigos relevantes para uma pesquisa
+
+**descrição:** O pacote ainda está sendo desenvolvido. Ele vai conter uma única função, em que a pessoa coloca uma palavra-chave, ou o nome de alguma Classe ou Assunto específica, e ela retorna todos os códigos (atuais e passados) relacionados a essa palavra-chave, ou os códigos (atuais e passados) específicos da Classe/Assunto que foram inseridos. 
+
+
+
+# Observatórios
+
+
+# abjClassifica
+
