@@ -1,5 +1,8 @@
 # Bases Juliana Bumachar
 
+
+# primeiro pedido ---------------------------------------------------------
+
 da <- obsFase3::da_processo_tidy |>
   dplyr::mutate(info_autofal = stringr::str_to_sentence(info_autofal)) |>
   dplyr::filter(
@@ -71,3 +74,40 @@ da <- da |>
 
 
 writexl::write_xlsx(da, "data-raw/nepi_2022/xlsx/da_bumachar.xlsx")
+
+
+# segundo pedido (feito pelo Bruno) ----------------------------------------------------------
+
+
+processos_bruno_nao_autofal <- obsFase3::da_processo_tidy |>
+  dplyr::filter(info_origem_min != "Autofalência")
+
+datas_leilao <- obsFase3::da_leilao_tidy |>
+  dplyr::select(
+    id_processo,
+    data_edital
+  ) |>
+  dplyr::filter(id_processo %in% dplyr::pull(da_bruno_nao_autofal, id_processo)) |>
+  dplyr::group_by(id_processo) |>
+  dplyr::filter(data_edital == min(data_edital)) |>
+  dplyr::distinct() |>
+  dplyr::ungroup()
+
+
+da_bruno_nao_autofal <- obsFase3::da_processo_tidy |>
+  dplyr::filter(info_origem_min != "Autofalência") |>
+  dplyr::left_join(datas_leilao) |>
+  dplyr::transmute(
+    id_processo,
+    ano_dist,
+    dt_decisao,
+    dt_arrecadacao = dplyr::coalesce(dt_arrecadacao, dt_arrecadacao2),
+    teve_arrecadacao = !is.na(dt_arrecadacao),
+    dt_leilao = dplyr::coalesce(data_edital, dt_edital_leilao, dt_edital_leilao_last),
+    teve_leilao = !is.na(dt_leilao),
+    dt_extincao,
+    teve_extincao = !is.na(dt_extincao)
+  )
+
+writexl::write_xlsx(da_bruno_nao_autofal, "data-raw/nepi_2022/xlsx/da_bruno_nao_autofal.xlsx")
+
