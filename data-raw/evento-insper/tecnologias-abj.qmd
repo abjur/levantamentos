@@ -30,10 +30,36 @@ knitr::opts_chunk$set(
 )
 
 cores_abj <-  viridis::viridis(2, 1, .2, .8)
-
 ```
 
-# Pacotes
+## Pacotes
+
+```{r}
+knitr::include_graphics("img/tpu.png")
+```
+
+:::: columns
+::: {.column width='33%'} 
+```{r}
+#| out.width: 70%
+knitr::include_graphics("img/abjutils.png")
+```
+:::
+
+::: {.column width='33%'}
+```{r}
+#| out.width: 70%
+knitr::include_graphics("img/forosCNJ.png")
+```
+:::
+
+::: {.column width='33%'}
+```{r}
+#| out.width: 70%
+knitr::include_graphics("img/abjData.png")
+```
+:::
+::::
 
 ## [abjutils](https://github.com/abjur/abjutils)
 
@@ -100,7 +126,7 @@ knitr::include_graphics("img/forosCNJ.png")
 :::
 
 ::: {.column width='80%'} 
-**motivação:** disponibilizar bases de dados e documentação do projeto de levantamento das comarcas e códigos do Brasil.
+**motivação:** disponibilizar a relação entre os foros e comarcas do CNJ (inclusive, ligando com os códigos do IBGE).
 
 
 ::: {style="font-size: 19px;"}
@@ -133,8 +159,34 @@ knitr::include_graphics("img/tpu.png")
 
 
 
-# Observatórios
 
+## Observatórios
 
-# abjClassifica
+**Dashboard:** [https://abjur.shinyapps.io/obsFase3/](https://abjur.shinyapps.io/obsFase3/)
 
+```{r}
+knitr::include_graphics("img/obsFase3_dash.png")
+```
+
+## abjClassifica
+
+:::: columns
+::: column
+**motivações:**
+
+- controle de inconsistências
+- formatação de dados (datas, por exemplo) que podem gerar erros na leitura
+- volume de dados
+:::
+
+::: column
+**soluções:**
+
+- bigquery
+- inputs customizáveis com shiny
+- maior controle sobre interface
+:::
+::::
+#  {background="#fff"}
+
+![](img/logo-abj-colorido.png){width="500"}
