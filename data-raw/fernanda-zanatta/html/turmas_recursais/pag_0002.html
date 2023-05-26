@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="pt-br" >
+<head >
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="robots" content="noarchive"><meta name="verify-v1" content="224i0eYLEeIl8ghBgI1dU7Qa4M9UikB3HtvfRaLSQSk=" /><title>TRF4 - Pesquisa de Jurisprudência</title>
+<link href="https://jurisprudencia.trf4.jus.br/pesquisa/css/portal.css?1.1.3-2.0.9" rel="stylesheet" type="text/css" media="All" />
+<link href="https://jurisprudencia.trf4.jus.br/pesquisa/css/pesquisa.css?1.1.3-2.0.9" rel="stylesheet" type="text/css" media="All" /><noscript>Está página contém JavaScripts usados no controle dos dados submetidos e seu browser não está habilitado para usá-los.</noscript><script type="text/javascript" charset="iso-8859-1" src="/infra_js/InfraUtil.js?2.0.9"></script></head>
+<body>
+<div class="areaGlobal" id="areaGlobal">
+<div class="barraSuperior">
+<img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/canto_sup_dir_menu_azul.gif" align="right" alt="Layout: canto superior direito cabeçalho"/></div>
+<div class="areaEsquerda">
+<div class="logotipo">
+<a href="http://www.trf4.jus.br/trf4/"><img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/logo_portal.gif" alt="Logotipo do portal"/></a></div>
+<div class="areaAbas">
+<img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/aba_destaque_trf4r.gif" alt="Tribunal Regional Federal da 4ª Região"/><img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/barra_degrade.jpg" /></div>
+<div class="areaDados">
+<strong class="titulo">Pesquisa de Jurisprudência</strong><br/><br/><script type="text/javascript" charset="ISO-8859-1" >
+<!--//--><![CDATA[//><!--
+
+    function inicializar(){
+    document.getElementById('btnVoltarAPesquisa').focus();
+    }
+
+    function exibirCitacao(d) {
+    var flagCitacao = false;
+    if ( flagCitacao ) {
+    janelaCitacao.close();
+    }
+    janelaCitacao=window.open('citacao.php?doc='+d,'janelaCitacao','location=0,status=0,resizable=1,scrollbars=1,width=500,height=350');
+    Esquerda = (screen.availWidth/2) - (500/2);
+    Topo = (screen.availHeight/2) - (350/2);
+    janelaCitacao.moveTo(Esquerda-10,Topo-10);
+    janelaCitacao.focus();
+    flagCitacao = true;
+    }
+
+
+    function SelecionarDocumentos(c) {
+    var sel = new String(document.getElementById('registrosSelecionados').value);
+    var doc = new String(c.value);
+    var pos = sel.search(doc.toString());
+    if ( c.checked == true ) {
+    if ( pos == -1 ) {
+    if ( sel.length > 0 ) {
+    sel = sel.concat(",");
+    }
+    sel = sel.concat(doc.toString());
+    }
+    }
+    else if ( pos != - 1 ) {
+    if ( sel.charAt(pos-1) == ',' && sel.charAt(pos+doc.length) == ',') {
+    sel = new String(sel.substr(0,pos)+sel.substr(pos+doc.length+1));
+    }
+    else if ( sel.charAt(pos-1) == ',') {
+    sel = new String(sel.substr(0,pos-1));
+    }
+    else if ( sel.charAt(pos+doc.length) == ',') {
+    sel = new String(sel.substr(pos+doc.length+1));
+    }
+    else {
+    sel = new String("");
+    }
+    }
+    document.getElementById('registrosSelecionados').value = sel.toString();
+    }
+
+
+    function MarcaDesmarcaTodos() {
+    for (var i=0; i<0; i++) {
+    box = document.getElementById('chkDoc' + i);
+    if (document.getElementById('checkTabela').value == "true") {
+    box.checked = true;
+    } else {
+    box.checked = false;
+    }
+    SelecionarDocumentos(box);
+    }
+    if (document.getElementById('checkTabela').value == "true") {
+    document.getElementById('checkTabela').value = "false";
+    }
+    else {
+    document.getElementById('checkTabela').value = "true";
+    }
+    }
+
+    function OnSubmitForm()
+    {
+    if(document.getElementById('hdnAcao').value == 'nova_pesquisa') {
+    document.getElementById('frmDocumentos').action ="pesquisa.php";
+    }
+    else if( document.getElementById('hdnAcao').value == 'refinar_pesquisa'){
+    document.getElementById('frmDocumentos').action ="pesquisa.php";
+    }
+    else if (document.getElementById('hdnAcao').value == 'filtrar_selecionados') {
+    if ( document.getElementById('registrosSelecionados').value == "" ) {
+    alert('Nenhum documento selecionado.');
+    return false;
+    }
+    else {
+    document.getElementById('frmDocumentos').action ="resultado_pesquisa.php";
+    }
+    }
+    return true;
+    }
+
+    function Imprimir() {
+    var flagImprimir = false;
+
+    if ( document.getElementById('registrosSelecionados').value == "" ) {
+    alert('Nenhum documento selecionado.');
+    return;
+    }
+
+    if ( flagImprimir ) {
+    janelaImprimir.close();
+    }
+    janelaImprimir = window.open("imprimir.php?selecionados="+document.getElementById('registrosSelecionados').value+"&pp=1234",'janelaImprimir','location=0,status=0,resizable=0,scrollbars=1,width=700,height=400');
+    Esquerda = (screen.availWidth/2) - (700/2);
+    Topo = (screen.availHeight/2) - (400/2);
+    janelaImprimir.moveTo(Esquerda-10,Topo-10);
+    janelaImprimir.focus();
+    flagImprimir = true;
+
+    }
+    //--><!]]>
+</script>
+    <form id="frmDocumentos" name="frmDocumentos" method="post" style="margin:0px;" onsubmit="return OnSubmitForm();"
+          action="" class="formulario">
+
+      <table border="0" width="100%">
+        <tr>
+          <td width="100%"><font size="4">&nbsp;</font></td>
+          <td><input type="submit" onclick="document.getElementById('hdnAcao').value='nova_pesquisa';"
+                     value="Nova Pesquisa" style="width:100px;" class="botao"/></td>
+          <td><input type="submit" id="btnVoltarAPesquisa" name="btnVoltarAPesquisa"
+                     onclick="document.getElementById('hdnAcao').value='refinar_pesquisa';" value="Voltar à Pesquisa"
+                     style="width:120px;" class="botao"/></td>
+
+                      <td><input type="submit" onclick="document.getElementById('hdnAcao').value='filtrar_selecionados';"
+                       value="Filtrar Selecionados" style="width:140px;" class="botao"/></td>
+            <td><input type="button" onclick="Imprimir();" value="Visualizar Selecionados" style="width:150px;"
+                       class="botao"/></td>
+                    </tr>
+      </table>
+
+      <hr size="1" width="100%" align="left"/>
+
+      <font color="#ff0000"><b>Documentos encontrados: 331</b></font><br /><br />          <input type="hidden" id="checkTabela" name="checkTabela" value="true"/>
+          <table width="100%" cellpadding="2" cellspacing="1" cellspacing="1" class="tab_resultado">
+            <tr class="tr_resultado_impar">
+              <td class="td_resultado" align="center"><img src="imagens/check1.gif"
+                                                           onmouseover="this.style.cursor='pointer';"
+                                                           title="Selecionar Todos/Remover seleção"
+                                                           alt="Selecionar Todos/Remover seleção"
+                                                           onclick="MarcaDesmarcaTodos();"/></td>
+              <td class="td_resultado" colspan="2"><b>Documentos</b></td>
+            </tr>
+                      </table>
+          <table width="100%" border="0" align="center" cellspacing="0" cellpadding="4"><tr><td width="45%" align="right"><input type="submit" id="sbmPaginaAnterior" name="sbmPaginaAnterior" onclick="document.getElementById('hdnAcao').value='';" value="anterior" class="botao_link" style="width:74px;" /></td><td width="10%" align="center">&nbsp;</td><td width="45%" align="left">&nbsp;</td></tr></table><br><br><br><input type="hidden" id="pesquisaLivre" name="pesquisaLivre" value="1234" /><input type="hidden" id="registrosSelecionados" name="registrosSelecionados" value="" /><input type="hidden" id="vetPaginacao" name="vetPaginacao" value="TRF431177214,TRF431177174,TRF431177149,TRF431177135,TRF431177083,TRF431165967,TRF431165923,TRF431165920,TRF431165865,TRF431165843,TRF431073876,TRF431072776,TRF431072647,TRF431072645,TRF431072644,TRF431072128,TRF431072065,TRF431072064,TRF431072063,TRF431072062,TRF431072061,TRF431072060,TRF431072059,TRF431060039,TRF431060024,TRF431059939,TRF431059926,TRF431059767,TRF431059745,TRF431059652" /><input type="hidden" id="paginaAtual" name="paginaAtual" value="1" /><input type="hidden" id="totalRegistros" name="totalRegistros" value="331" />
+<input type="hidden" id="rdoCampoPesquisa" name="rdoCampoPesquisa" value="I" />
+<input type="hidden" id="chkAcordaos" name="chkAcordaos" value="on" />
+<input type="hidden" id="chkDecMono" name="chkDecMono" value="on" />
+<input type="hidden" id="textoPesqLivre" name="textoPesqLivre" value="1234" />
+<input type="hidden" id="chkDocumentosSelecionados" name="chkDocumentosSelecionados" value="" />
+<input type="hidden" id="numProcesso" name="numProcesso" value="" />
+<input type="hidden" id="cboRelator" name="cboRelator" value="" />
+<input type="hidden" id="dataIni" name="dataIni" value="17/04/2023" />
+<input type="hidden" id="dataFim" name="dataFim" value="17/05/2023" />
+<input type="hidden" id="tipodata" name="tipodata" value="DEC" />
+<input type="hidden" id="docsPagina" name="docsPagina" value="50" />
+<input type="hidden" id="arrorgaos" name="arrorgaos" value="" />
+<input type="hidden" id="arrclasses" name="arrclasses" value="" />
+      <input type="hidden" id="hdnAcao" name="hdnAcao" value=""/>
+      <input type="hidden" id="hdnTipo" name="hdnTipo" value="1"/>
+
+    </form>
+    </div>
+</html>

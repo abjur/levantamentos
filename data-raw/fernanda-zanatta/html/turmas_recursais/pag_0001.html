@@ -1,0 +1,735 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="pt-br" >
+<head >
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="robots" content="noarchive"><meta name="verify-v1" content="224i0eYLEeIl8ghBgI1dU7Qa4M9UikB3HtvfRaLSQSk=" /><title>TRF4 - Pesquisa de Jurisprudência</title>
+<link href="https://jurisprudencia.trf4.jus.br/pesquisa/css/portal.css?1.1.3-2.0.9" rel="stylesheet" type="text/css" media="All" />
+<link href="https://jurisprudencia.trf4.jus.br/pesquisa/css/pesquisa.css?1.1.3-2.0.9" rel="stylesheet" type="text/css" media="All" /><noscript>Está página contém JavaScripts usados no controle dos dados submetidos e seu browser não está habilitado para usá-los.</noscript><script type="text/javascript" charset="iso-8859-1" src="/infra_js/InfraUtil.js?2.0.9"></script></head>
+<body>
+<div class="areaGlobal" id="areaGlobal">
+<div class="barraSuperior">
+<img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/canto_sup_dir_menu_azul.gif" align="right" alt="Layout: canto superior direito cabeçalho"/></div>
+<div class="areaEsquerda">
+<div class="logotipo">
+<a href="http://www.trf4.jus.br/trf4/"><img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/logo_portal.gif" alt="Logotipo do portal"/></a></div>
+<div class="areaAbas">
+<img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/aba_destaque_trf4r.gif" alt="Tribunal Regional Federal da 4ª Região"/><img src="https://jurisprudencia.trf4.jus.br/pesquisa/imagens/barra_degrade.jpg" /></div>
+<div class="areaDados">
+<strong class="titulo">Pesquisa de Jurisprudência</strong><br/><br/><script type="text/javascript" charset="ISO-8859-1" >
+<!--//--><![CDATA[//><!--
+
+    function inicializar(){
+    document.getElementById('btnVoltarAPesquisa').focus();
+    }
+
+    function exibirCitacao(d) {
+    var flagCitacao = false;
+    if ( flagCitacao ) {
+    janelaCitacao.close();
+    }
+    janelaCitacao=window.open('citacao.php?doc='+d,'janelaCitacao','location=0,status=0,resizable=1,scrollbars=1,width=500,height=350');
+    Esquerda = (screen.availWidth/2) - (500/2);
+    Topo = (screen.availHeight/2) - (350/2);
+    janelaCitacao.moveTo(Esquerda-10,Topo-10);
+    janelaCitacao.focus();
+    flagCitacao = true;
+    }
+
+
+    function SelecionarDocumentos(c) {
+    var sel = new String(document.getElementById('registrosSelecionados').value);
+    var doc = new String(c.value);
+    var pos = sel.search(doc.toString());
+    if ( c.checked == true ) {
+    if ( pos == -1 ) {
+    if ( sel.length > 0 ) {
+    sel = sel.concat(",");
+    }
+    sel = sel.concat(doc.toString());
+    }
+    }
+    else if ( pos != - 1 ) {
+    if ( sel.charAt(pos-1) == ',' && sel.charAt(pos+doc.length) == ',') {
+    sel = new String(sel.substr(0,pos)+sel.substr(pos+doc.length+1));
+    }
+    else if ( sel.charAt(pos-1) == ',') {
+    sel = new String(sel.substr(0,pos-1));
+    }
+    else if ( sel.charAt(pos+doc.length) == ',') {
+    sel = new String(sel.substr(pos+doc.length+1));
+    }
+    else {
+    sel = new String("");
+    }
+    }
+    document.getElementById('registrosSelecionados').value = sel.toString();
+    }
+
+
+    function MarcaDesmarcaTodos() {
+    for (var i=0; i<30; i++) {
+    box = document.getElementById('chkDoc' + i);
+    if (document.getElementById('checkTabela').value == "true") {
+    box.checked = true;
+    } else {
+    box.checked = false;
+    }
+    SelecionarDocumentos(box);
+    }
+    if (document.getElementById('checkTabela').value == "true") {
+    document.getElementById('checkTabela').value = "false";
+    }
+    else {
+    document.getElementById('checkTabela').value = "true";
+    }
+    }
+
+    function OnSubmitForm()
+    {
+    if(document.getElementById('hdnAcao').value == 'nova_pesquisa') {
+    document.getElementById('frmDocumentos').action ="pesquisa.php";
+    }
+    else if( document.getElementById('hdnAcao').value == 'refinar_pesquisa'){
+    document.getElementById('frmDocumentos').action ="pesquisa.php";
+    }
+    else if (document.getElementById('hdnAcao').value == 'filtrar_selecionados') {
+    if ( document.getElementById('registrosSelecionados').value == "" ) {
+    alert('Nenhum documento selecionado.');
+    return false;
+    }
+    else {
+    document.getElementById('frmDocumentos').action ="resultado_pesquisa.php";
+    }
+    }
+    return true;
+    }
+
+    function Imprimir() {
+    var flagImprimir = false;
+
+    if ( document.getElementById('registrosSelecionados').value == "" ) {
+    alert('Nenhum documento selecionado.');
+    return;
+    }
+
+    if ( flagImprimir ) {
+    janelaImprimir.close();
+    }
+    janelaImprimir = window.open("imprimir.php?selecionados="+document.getElementById('registrosSelecionados').value+"&pp=1234",'janelaImprimir','location=0,status=0,resizable=0,scrollbars=1,width=700,height=400');
+    Esquerda = (screen.availWidth/2) - (700/2);
+    Topo = (screen.availHeight/2) - (400/2);
+    janelaImprimir.moveTo(Esquerda-10,Topo-10);
+    janelaImprimir.focus();
+    flagImprimir = true;
+
+    }
+    //--><!]]>
+</script>
+    <form id="frmDocumentos" name="frmDocumentos" method="post" style="margin:0px;" onsubmit="return OnSubmitForm();"
+          action="" class="formulario">
+
+      <table border="0" width="100%">
+        <tr>
+          <td width="100%"><font size="4">&nbsp;</font></td>
+          <td><input type="submit" onclick="document.getElementById('hdnAcao').value='nova_pesquisa';"
+                     value="Nova Pesquisa" style="width:100px;" class="botao"/></td>
+          <td><input type="submit" id="btnVoltarAPesquisa" name="btnVoltarAPesquisa"
+                     onclick="document.getElementById('hdnAcao').value='refinar_pesquisa';" value="Voltar à Pesquisa"
+                     style="width:120px;" class="botao"/></td>
+
+                      <td><input type="submit" onclick="document.getElementById('hdnAcao').value='filtrar_selecionados';"
+                       value="Filtrar Selecionados" style="width:140px;" class="botao"/></td>
+            <td><input type="button" onclick="Imprimir();" value="Visualizar Selecionados" style="width:150px;"
+                       class="botao"/></td>
+                    </tr>
+      </table>
+
+      <hr size="1" width="100%" align="left"/>
+
+      <font color="#ff0000"><b>Documentos encontrados: 30</b></font><br /><br />          <input type="hidden" id="checkTabela" name="checkTabela" value="true"/>
+          <table width="100%" cellpadding="2" cellspacing="1" cellspacing="1" class="tab_resultado">
+            <tr class="tr_resultado_impar">
+              <td class="td_resultado" align="center"><img src="imagens/check1.gif"
+                                                           onmouseover="this.style.cursor='pointer';"
+                                                           title="Selecionar Todos/Remover seleção"
+                                                           alt="Selecionar Todos/Remover seleção"
+                                                           onclick="MarcaDesmarcaTodos();"/></td>
+              <td class="td_resultado" colspan="2"><b>Documentos</b></td>
+            </tr>
+            <tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc0" name="chkDoc0" class="checkbox_sem_fundo" value="TRF431177214" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />1</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50460702120224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=8d58ffc921e3df5a3ec074e727fe7ec7&txtPalavraGerada=HrYw" target="_blank">5046070-21.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014021833&versao_gproc=2&crc_gproc=9822f3db&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431177214');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR PARCIAL PROVIMENTO AO RECURSO DA UNIÃO E NEGAR PROVIMENTO AO RECURSO DO ESTADO DO PARANÁ, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc1" name="chkDoc1" class="checkbox_sem_fundo" value="TRF431177174" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />2</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50159208520214047002&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=7df510aa28cae53d3a37f8c78e0830f3&txtPalavraGerada=jCWs" target="_blank">5015920-85.2021.4.04.7002</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014021921&versao_gproc=2&crc_gproc=cc608668&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431177174');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR  PROVIMENTO AO RECURSO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc2" name="chkDoc2" class="checkbox_sem_fundo" value="TRF431177149" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />3</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50114028720234047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=1358bc565a0b3d2699b7ecbcfb17f959&txtPalavraGerada=Wsab" target="_blank">5011402-87.2023.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014021457&versao_gproc=2&crc_gproc=be71c1e4&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431177149');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, CONCEDER A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc3" name="chkDoc3" class="checkbox_sem_fundo" value="TRF431177135" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />4</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50092795320224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=5522fc1bd57f2a81783c827baca654e7&txtPalavraGerada=gany" target="_blank">5009279-53.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014019826&versao_gproc=2&crc_gproc=ae38ce6d&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431177135');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, NÃO CONHECER DO AGRAVO INTERNO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc4" name="chkDoc4" class="checkbox_sem_fundo" value="TRF431177083" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />5</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50005608320224047032&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=2967c157f1d001f55ff58e08a98b3d62&txtPalavraGerada=OByf" target="_blank">5000560-83.2022.4.04.7032</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014021829&versao_gproc=2&crc_gproc=bbfc2e3f&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431177083');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR PARCIAL PROVIMENTO AO RECURSO DA UNIÃO E NEGAR PROVIMENTO AO RECURSO DO ESTADO DO PARANÁ, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc5" name="chkDoc5" class="checkbox_sem_fundo" value="TRF431165967" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />6</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50055583020214047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=09b232c47bf6304ba25c56e874d61222&txtPalavraGerada=HzOb" target="_blank">5005558-30.2021.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014021490&versao_gproc=2&crc_gproc=52b8c651&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431165967');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">GERSON LUIZ ROCHA</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, NEGAR PROVIMENTO AOS EMBARGOS DE DECLARAÇÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc6" name="chkDoc6" class="checkbox_sem_fundo" value="TRF431165923" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />7</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b>RMC - RECURSO DE MEDIDA CAUTELAR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50547846720224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=f0b7c0c6a24b57e2ea3f84befef908aa&txtPalavraGerada=yjGr" target="_blank">5054784-67.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014023350&versao_gproc=2&crc_gproc=5bfe16e2&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431165923');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">RODRIGO DE SOUZA CRUZ</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR PARCIAL PROVIMENTO AOS EMBARGOS DE DECLARAÇÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc7" name="chkDoc7" class="checkbox_sem_fundo" value="TRF431165920" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />8</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50496367520224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=a9193f49b010f9e35b678d246b9a003e&txtPalavraGerada=aGBp" target="_blank">5049636-75.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014023363&versao_gproc=2&crc_gproc=fc30819d&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431165920');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">RODRIGO DE SOUZA CRUZ</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, CONCEDER A SEGURANÇA e JULGAR PREJUDICADO O AGRAVO INTERNO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc8" name="chkDoc8" class="checkbox_sem_fundo" value="TRF431165865" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />9</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50102016020234047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=ef4c47d418dfb60042bc61a6aefa7b9e&txtPalavraGerada=SRmA" target="_blank">5010201-60.2023.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014023333&versao_gproc=2&crc_gproc=6a721096&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431165865');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">RODRIGO DE SOUZA CRUZ</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DENEGAR A ORDEM e JULGAR PREJUDICADO O AGRAVO INTERNO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc9" name="chkDoc9" class="checkbox_sem_fundo" value="TRF431165843" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />10</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50056117520214047011&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=0963bfc93a29188ecc68e49b6cdfb62e&txtPalavraGerada=hYRG" target="_blank">5005611-75.2021.4.04.7011</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>09/05/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700014023348&versao_gproc=2&crc_gproc=f1bddff7&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431165843');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">RODRIGO DE SOUZA CRUZ</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, NEGAR PROVIMENTO AOS EMBARGOS DE DECLARAÇÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc10" name="chkDoc10" class="checkbox_sem_fundo" value="TRF431073876" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />11</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b>RMC - RECURSO DE MEDIDA CAUTELAR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50007673820234047100&chkMostrarBaixados=S&selOrigem=RS&hdnRefId=24b9d4a1d0f8e3d021661254161daf4a&txtPalavraGerada=ocnF" target="_blank">5000767-38.2023.4.04.7100</a></td><td colspan="2"><b>UF: </b>RS</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>28/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>QUINTA TURMA RECURSAL DO RS</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=2&numero_gproc=710017575159&versao_gproc=2&crc_gproc=68229d21&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431073876');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">PAULO VIEIRA AVELINE</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 5ª Turma Recursal do Rio Grande do Sul decidiu, por unanimidade, NEGAR PROVIMENTO ao recurso de medida cautelar e julgar prejudicado o agravo interno, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc11" name="chkDoc11" class="checkbox_sem_fundo" value="TRF431072776" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />12</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50336939720224047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=4084db2850a563af4b57698c474ffa1e&txtPalavraGerada=QkWT" target="_blank">5033693-97.2022.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009887228&versao_gproc=2&crc_gproc=9af80ef9&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072776');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">GILSON JACOBSEN</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por maioria, vencido o Juiz Federal ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA, NÃO CONHECER DO AGRAVO.</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc12" name="chkDoc12" class="checkbox_sem_fundo" value="TRF431072647" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />13</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50270664820204047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=f6a7b406ec7c86e9f8ad9a7023c6a81c&txtPalavraGerada=dfFu" target="_blank">5027066-48.2020.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009887317&versao_gproc=2&crc_gproc=ebb3a786&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072647');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">GILSON JACOBSEN</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, DAR PROVIMENTO AO AGRAVO INTERNO e, em juízo de adequação, DENEGAR A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc13" name="chkDoc13" class="checkbox_sem_fundo" value="TRF431072645" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />14</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50348504220214047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=6c5a5d525243f8570ccbc346b64c38ad&txtPalavraGerada=yANk" target="_blank">5034850-42.2021.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009887321&versao_gproc=2&crc_gproc=ecfb1775&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072645');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">GILSON JACOBSEN</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, NEGAR PROVIMENTO AO AGRAVO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc14" name="chkDoc14" class="checkbox_sem_fundo" value="TRF431072644" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />15</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50324384120214047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=4975397136f6fd7a1f3f278209e6598b&txtPalavraGerada=qngo" target="_blank">5032438-41.2021.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009887319&versao_gproc=2&crc_gproc=a73a00ad&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072644');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">GILSON JACOBSEN</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, NEGAR PROVIMENTO AO AGRAVO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc15" name="chkDoc15" class="checkbox_sem_fundo" value="TRF431072128" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />16</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50068769320224047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=624af936c39ffdd98d9c60503841e0e3&txtPalavraGerada=HCXW" target="_blank">5006876-93.2022.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888175&versao_gproc=2&crc_gproc=154852bb&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072128');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, DAR PROVIMENTO AO AGRAVO INTERNO e, em juízo de adequação, voto por DENEGAR A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc16" name="chkDoc16" class="checkbox_sem_fundo" value="TRF431072065" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />17</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50015181620234047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=5715fc9f7ce699bc7fc6a2a6383e78a9&txtPalavraGerada=SWrn" target="_blank">5001518-16.2023.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888415&versao_gproc=2&crc_gproc=9fb50c86&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072065');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, DENEGAR A SEGURANÇA e NEGAR PROVIMENTO AO AGRAVO INTERNO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc17" name="chkDoc17" class="checkbox_sem_fundo" value="TRF431072064" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />18</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50002510920234047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=d72090766ce3c78e8f88b5ab5f4433aa&txtPalavraGerada=haQN" target="_blank">5000251-09.2023.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888359&versao_gproc=2&crc_gproc=447f2aa5&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072064');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, CONCEDER A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc18" name="chkDoc18" class="checkbox_sem_fundo" value="TRF431072063" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />19</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50353853420224047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=73b26ca3bec0ff6b604aaecd61dc9708&txtPalavraGerada=wJqH" target="_blank">5035385-34.2022.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888379&versao_gproc=2&crc_gproc=60bca1bf&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072063');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, CONCEDER A SEGURANÇA e NEGAR PROVIMENTO AO AGRAVO INTERNO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc19" name="chkDoc19" class="checkbox_sem_fundo" value="TRF431072062" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />20</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50321116220224047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=36cbcc40d419549a98eed75f908874e8&txtPalavraGerada=OEbW" target="_blank">5032111-62.2022.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009887327&versao_gproc=2&crc_gproc=f16daa2a&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072062');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, CONCEDER A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc20" name="chkDoc20" class="checkbox_sem_fundo" value="TRF431072061" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />21</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50345037220224047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=bcee85fb14a8f9f0b92746010fe3b034&txtPalavraGerada=PGsC" target="_blank">5034503-72.2022.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888383&versao_gproc=2&crc_gproc=fa4e6284&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072061');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, CONCEDER A SEGURANÇA e NEGAR PROVIMENTO AO AGRAVO INTERNO INTERPOSTO PELA UNIÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc21" name="chkDoc21" class="checkbox_sem_fundo" value="TRF431072060" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />22</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50016195320234047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=d316a835bc1566d7356d47734d266e48&txtPalavraGerada=qOpf" target="_blank">5001619-53.2023.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888381&versao_gproc=2&crc_gproc=c23e1746&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072060');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, CONCEDER A SEGURANÇA e NEGAR PROVIMENTO AO AGRAVO INTERNO INTERPOSTO PELA UNIÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc22" name="chkDoc22" class="checkbox_sem_fundo" value="TRF431072059" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />23</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50041622920234047200&chkMostrarBaixados=S&selOrigem=SC&hdnRefId=b0de93378d24b7043c45f2c42e3fe662&txtPalavraGerada=KBuQ" target="_blank">5004162-29.2023.4.04.7200</a></td><td colspan="2"><b>UF: </b>SC</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>27/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>TERCEIRA TURMA RECURSAL DE SC</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=3&numero_gproc=720009888357&versao_gproc=2&crc_gproc=4a9f1e0c&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431072059');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">ANTONIO FERNANDO SCHENKEL DO AMARAL E SILVA</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 3ª Turma Recursal de Santa Catarina decidiu, por unanimidade, CONCEDER A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc23" name="chkDoc23" class="checkbox_sem_fundo" value="TRF431060039" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />24</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50641044420224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=f9100351e1b276280666e5c0f902d29a&txtPalavraGerada=qZVf" target="_blank">5064104-44.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940223&versao_gproc=2&crc_gproc=5e786991&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431060039');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DENEGAR A SEGURANÇA, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc24" name="chkDoc24" class="checkbox_sem_fundo" value="TRF431060024" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />25</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50494289120224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=1b7ee5f37b3134d0d6059a444534b8fa&txtPalavraGerada=WQOy" target="_blank">5049428-91.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940205&versao_gproc=2&crc_gproc=9224fe2f&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431060024');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR PARCIAL PROVIMENTO AO RECURSO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc25" name="chkDoc25" class="checkbox_sem_fundo" value="TRF431059939" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />26</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50058420220214047012&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=cc28662d1be46b2d00aa062530cf8e17&txtPalavraGerada=jpcY" target="_blank">5005842-02.2021.4.04.7012</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940157&versao_gproc=2&crc_gproc=4d7007b9&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431059939');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR PARCIAL PROVIMENTO AO RECURSO DA UNIÃO E NEGAR PROVIMENTO AO RECURSO DO ESTADO DO PARANÁ, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc26" name="chkDoc26" class="checkbox_sem_fundo" value="TRF431059926" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />27</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50042437920224047016&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=ce4b7640bb7783cca5d02b58972c33d4&txtPalavraGerada=RoWS" target="_blank">5004243-79.2022.4.04.7016</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940215&versao_gproc=2&crc_gproc=1315e740&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431059926');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">NICOLAU KONKEL JÚNIOR</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, DAR PARCIAL PROVIMENTO AO RECURSO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc27" name="chkDoc27" class="checkbox_sem_fundo" value="TRF431059767" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />28</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50322636520214047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=6f0eed368d31b2d75b713591c3762b19&txtPalavraGerada=HZUa" target="_blank">5032263-65.2021.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940915&versao_gproc=2&crc_gproc=a076834d&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431059767');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relatora</b></td>
+<td class="td_resultado" valign="top">MÁRCIA VOGEL VIDAL DE OLIVEIRA</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, NEGAR PROVIMENTO AOS EMBARGOS DE DECLARAÇÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc28" name="chkDoc28" class="checkbox_sem_fundo" value="TRF431059745" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />29</td></tr><tr class="tr_resultado_par">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - RECURSO CÍVEL</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50097503720204047001&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=8ea93ff1408267f4f1be86f8b8607008&txtPalavraGerada=OkBv" target="_blank">5009750-37.2020.4.04.7001</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940867&versao_gproc=2&crc_gproc=5d72ff30&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431059745');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_par" >
+<td class="td_resultado" align="left" valign="top"><b>Relatora</b></td>
+<td class="td_resultado" valign="top">MÁRCIA VOGEL VIDAL DE OLIVEIRA</td>
+</tr>
+<tr class="tr_resultado_par" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, NEGAR PROVIMENTO AOS EMBARGOS DE DECLARAÇÃO, nos termos do voto do(a) Relator(a).</td>
+</tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" valign="top" align="center" rowspan="4" ><input type="checkbox" id="chkDoc29" name="chkDoc29" class="checkbox_sem_fundo" value="TRF431059652" title="Marcar Documento" onclick="SelecionarDocumentos(this);" /><br />30</td></tr><tr class="tr_resultado_impar">
+<td class="td_resultado" align="left" valign="top"><b>Acórdão</b></td>
+<td class="td_resultado" valign="top" ><table width="100%" border="0">
+<tr><td colspan="4"><b>Classe: </b> - MANDADO DE SEGURANÇA TR</td></tr>
+<tr><td colspan="2"><b>Processo: </b><a href="http://www.trf4.jus.br/trf4/processos/acompanhamento/resultado_pesquisa.php?selForma=NU&txtValor=50210269720224047000&chkMostrarBaixados=S&selOrigem=PR&hdnRefId=28eb748d668ecf7d012108b241ec3efe&txtPalavraGerada=Zaug" target="_blank">5021026-97.2022.4.04.7000</a></td><td colspan="2"><b>UF: </b>PR</td></tr>
+<tr><td colspan="2"><b>Data da Decisão: </b>25/04/2023</td><td colspan="2"><b>Orgão Julgador: </b>PRIMEIRA TURMA RECURSAL DO PR</td></tr>
+<tr><td width="15%"><b>Inteiro Teor:</b></td><td width="30%"><a href="https://jurisprudencia.trf4.jus.br/pesquisa/inteiro_teor.php?orgao=4&numero_gproc=700013940472&versao_gproc=2&crc_gproc=e58f9c3b&termosPesquisados=MTIzNCA=" target="_blank"><img title="Visualizar Inteiro Teor" alt="Visualização do Inteiro Teor" src='imagens/lupa.gif' style="border:0px" onmouseover="this.style.cursor='pointer'" /></a></td><td width="10%"><b>Citação:</b></td><td width="40%"><img title="Visualizar Citação" alt="Visualização da Citação" src='imagens/citacao.gif' onmouseover="this.style.cursor='pointer'" onclick="exibirCitacao('TRF431059652');" /></td></tr>
+</table>
+</td></tr>
+<tr class="tr_resultado_impar" >
+<td class="td_resultado" align="left" valign="top"><b>Relator</b></td>
+<td class="td_resultado" valign="top">RODRIGO DE SOUZA CRUZ</td>
+</tr>
+<tr class="tr_resultado_impar" >
+  <td class="td_resultado" align="left" valign="top"><b>Decisão</b></td>
+  <td class="td_resultado" valign="top">A 1ª Turma Recursal do Paraná decidiu, por unanimidade, NEGAR PROVIMENTO AOS EMBARGOS DE DECLARAÇÃO DA UNIÃO e CORRIGIR O ERRO MATERIAL constante na decisão do evento 22.2 que passará a dispor:, nos termos do voto do(a) Relator(a).</td>
+</tr>
+          </table>
+                      <br/>
+            <table border="0" width="100%">
+              <tr>
+                <td width="100%">&nbsp;</td>
+                <td><input type="submit" onclick="document.getElementById('hdnAcao').value='nova_pesquisa';"
+                           value="Nova Pesquisa" style="width:100px;" class="botao"/></td>
+                <td><input type="submit" onclick="document.getElementById('hdnAcao').value='refinar_pesquisa';"
+                           value="Voltar à Pesquisa" style="width:120px;" class="botao"/></td>
+                <td><input type="submit" onclick="document.getElementById('hdnAcao').value='filtrar_selecionados';"
+                           value="Filtrar Selecionados" style="width:140px" class="botao"/></td>
+                <td><input type="button" onclick="Imprimir();" value="Visualizar Selecionados" style="width:150px;"
+                           class="botao"/></td>
+              </tr>
+            </table>
+            <br/>
+            <table width="100%" border="0" align="center" cellspacing="0" cellpadding="4"><tr><td width="45%" align="right">&nbsp;</td><td width="10%" align="center">&nbsp;</td><td width="45%" align="left">&nbsp;</td></tr></table><br><br><br><input type="hidden" id="pesquisaLivre" name="pesquisaLivre" value="1234 " /><input type="hidden" id="registrosSelecionados" name="registrosSelecionados" value="" /><input type="hidden" id="vetPaginacao" name="vetPaginacao" value="TRF431177214,TRF431177174,TRF431177149,TRF431177135,TRF431177083,TRF431165967,TRF431165923,TRF431165920,TRF431165865,TRF431165843,TRF431073876,TRF431072776,TRF431072647,TRF431072645,TRF431072644,TRF431072128,TRF431072065,TRF431072064,TRF431072063,TRF431072062,TRF431072061,TRF431072060,TRF431072059,TRF431060039,TRF431060024,TRF431059939,TRF431059926,TRF431059767,TRF431059745,TRF431059652" /><input type="hidden" id="paginaAtual" name="paginaAtual" value="0" /><input type="hidden" id="totalRegistros" name="totalRegistros" value="30" />
+<input type="hidden" id="rdoCampoPesquisa" name="rdoCampoPesquisa" value="I" />
+<input type="hidden" id="chkAcordaos" name="chkAcordaos" value="on" />
+<input type="hidden" id="chkDecMono" name="chkDecMono" value="on" />
+<input type="hidden" id="textoPesqLivre" name="textoPesqLivre" value="1234" />
+<input type="hidden" id="chkDocumentosSelecionados" name="chkDocumentosSelecionados" value="" />
+<input type="hidden" id="numProcesso" name="numProcesso" value="" />
+<input type="hidden" id="cboRelator" name="cboRelator" value="" />
+<input type="hidden" id="dataIni" name="dataIni" value="17/04/2023" />
+<input type="hidden" id="dataFim" name="dataFim" value="17/05/2023" />
+<input type="hidden" id="tipodata" name="tipodata" value="DEC" />
+<input type="hidden" id="docsPagina" name="docsPagina" value="50" />
+<input type="hidden" id="arrorgaos" name="arrorgaos" value="" />
+<input type="hidden" id="arrclasses" name="arrclasses" value="" />
+      <input type="hidden" id="hdnAcao" name="hdnAcao" value=""/>
+      <input type="hidden" id="hdnTipo" name="hdnTipo" value="2"/>
+
+    </form>
+    </div>
+</html>
