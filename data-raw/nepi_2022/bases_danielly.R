@@ -66,8 +66,22 @@ pessoas_naturais <- partes |>
   dplyr::distinct(id_processo) |>
   dplyr::pull()
 
+litis <- partes |>
+  dplyr::filter(!is.na(forma_participacao)) |>
+  dplyr::group_by(id_processo) |>
+  dplyr::count(forma_participacao) |>
+  dplyr::ungroup() |>
+  dplyr::filter(
+    forma_participacao %in% c("Devedor", "Autofalência"),
+    n > 1
+  ) |>
+  dplyr::pull(id_processo)
+
 da_danielly <- obsFase3::da_processo_tidy |>
   dplyr::filter(id_processo %in% pessoas_naturais) |>
+  dplyr::mutate(
+    litis = ifelse(id_processo %in% litis, "Sim", "Não")
+  ) |>
   dplyr::select(
     id_processo,
     ano_dist,
@@ -100,7 +114,8 @@ da_danielly <- obsFase3::da_processo_tidy |>
     info_aj_relatorio_mp,
     info_obrig_extin,
     info_fal_extin_caucao,
-    dplyr::contains("pgto")
+    dplyr::contains("pgto"),
+    litis
   )
 
 writexl::write_xlsx(da_danielly, "data-raw/nepi_2022/xlsx/da_danielly.xlsx")
