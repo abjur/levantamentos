@@ -1,7 +1,9 @@
 pep <- readr::read_csv2(
   "data-raw/criminal-candidatos-g1/202304_PEP.csv", locale = readr::locale(encoding = "latin1")
 ) |>
-  janitor::clean_names() |>
+  janitor::clean_names()
+
+pep <- pep |>
   dplyr::filter(sigla_funcao == "PREFEI") |>
   dplyr::mutate(
     uf = stringr::str_extract(nome_orgao, "(?<=-)[A-Z]{2}$"),
@@ -15,16 +17,18 @@ candidatos <- readr::read_csv2(
   locale = readr::locale(encoding = "latin1")
 )
 
-prefeitos <- candidatos |>
+candidatos <- candidatos |>
   janitor::clean_names() |>
   dplyr::filter(stringr::str_detect(ds_cargo, "PREF"), sg_uf == "SP") |>
   dplyr::transmute(
     sg_uf, sg_ue, nm_ue, nm_candidato, nr_cpf_candidato, sg_partido,
     cpf_join = stringr::str_sub(nr_cpf_candidato, 4, 9)
-  ) |>
-  dplyr::inner_join(pep, by = c("nm_candidato" = "nome_pep", "cpf_join"))
+  )
 
-cpf_busca <- unique(prefeitos$nr_cpf_candidato)
+cpf_busca <- candidatos |>
+  dplyr::inner_join(pep, by = c("nm_candidato" = "nome_pep", "cpf_join")) |>
+  dplyr::pull(nr_cpf_candidato) |>
+  unique()
 
 
 # download cpopg ----
@@ -109,54 +113,3 @@ cpopg <- purrr::map(
   dir = "data-raw/criminal-candidatos-g1/cpopg_prefeitos2023",
   .progress = TRUE
 )
-
-cpopg <- cpopg |>
-  purrr::flatten_chr() |>
-  purrr::compact()
-
-
-# parse cpopg ----
-
-path <- "data-raw/criminal-candidatos-g1/cpopg_prefeitos2023"
-
-parse_cpf <- function(path_cpf) {
-  path_cpf |>
-    fs::dir_ls(glob = "*.html") |>
-    purrr::map_vec(lex::tjsp_cpopg_parse) |>
-    dplyr::mutate(cpf = basename(path_cpf))
-}
-
-parsed <- path |>
-  fs::dir_ls() |>
-  purrr::map(parse_cpf, .progress = TRUE)
-
-parsed <- parsed |>
-  dplyr::bind_rows() |>
-  dplyr::relocate(cpf) |>
-  dplyr::inner_join(prefeitos, by = c("cpf" = "nr_cpf_candidato"))
-readr::write_rds(parsed, paste0(path, ".rds"))
-parsed |>
-  dplyr::select(-where(is.list)) |>
-  writexl::write_xlsx(paste0(path, ".xlsx"))
-
-# Apenas processos criminais
-criminal <- dplyr::filter(parsed, area == "Criminal")
-readr::write_rds(criminal, paste0(path, "_criminal.rds"))
-criminal |>
-  dplyr::select(-where(is.list)) |>
-  writexl::write_xlsx(paste0(path, "_criminal.xlsx"))
-
-# Processos criminais ativos (não suspensos)
-criminal_ativos <- dplyr::filter(criminal, !stringr::str_detect(status, "Suspenso"))
-readr::write_rds(criminal_ativos, paste0(path, "_criminal_ativos.rds"))
-criminal_ativos |>
-  dplyr::select(-where(is.list)) |>
-  writexl::write_xlsx(paste0(path, "_criminal_ativos.xlsx"))
-
-# Partes unnested criminais ativos
-partes <- criminal_ativos |>
-  dplyr::select(cpf, nm_candidato, id_processo, partes) |>
-  tidyr::unnest(partes, names_sep = "partes")
-writexl::write_xlsx(criminal_ativos, paste0(path, "_criminal_ativos_partes.xlsx"))
-
-

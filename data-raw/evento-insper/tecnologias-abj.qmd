@@ -185,6 +185,7 @@ knitr::include_graphics("img/obsFase3_dash.png")
 - bigquery
 - inputs customizáveis com shiny
 - maior controle sobre interface
+- (em desenvolvimento) integração com LLMs
 :::
 ::::
 #  {background="#fff"}

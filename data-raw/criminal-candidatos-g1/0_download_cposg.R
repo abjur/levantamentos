@@ -1,5 +1,3 @@
-library(magrittr)
-
 tjsp_cposg_cpf_download <- function (cpf, dir = ".", login = Sys.getenv("ESAJ_LOGIN"), senha = Sys.getenv("ESAJ_SENHA"))
   {
     stopifnot(length(id) == 1)
@@ -27,22 +25,22 @@ tjsp_cposg_cpf_download <- function (cpf, dir = ".", login = Sys.getenv("ESAJ_LO
         httr::write_disk(file, TRUE)
       )
     links <-
-      f_search %>% httr::content() %>% xml2::xml_find_all("//*[@class='nuProcesso']/a") %>%
+      f_search |> httr::content() |> xml2::xml_find_all("//*[@class='nuProcesso']/a") |>
       xml2::xml_attr("href")
     if (length(links) != 0) {
       descs <-
-        f_search %>% httr::content() %>% xml2::xml_find_all("//*[@id='listagemDeProcessos']") %>%
-        xml2::xml_text() %>% stringr::str_remove_all("[\\n\\t]") %>%
-        stringr::str_split(" {35}") %>% purrr::pluck(1) %>%
-        magrittr::extract(2:length(.)) %>% stringr::str_squish()
+        f_search |> httr::content() |> xml2::xml_find_all("//*[@id='listagemDeProcessos']") |>
+        xml2::xml_text() |> stringr::str_remove_all("[\\n\\t]") |>
+        stringr::str_split(" {35}") |> purrr::pluck(1) |>
+        magrittr::extract(2:length(.)) |> stringr::str_squish()
       file.remove(file)
       subjects <-
-        descs %>% rm_accent() %>% stringr::str_to_lower() %>%
-        stringr::str_extract("[a-z ]+./") %>% stringr::str_extract("[a-z ]+") %>%
-        stringr::str_trim() %>% stringr::str_replace_all(" ",
+        descs |> rm_accent() |> stringr::str_to_lower() |>
+        stringr::str_extract("[a-z ]+./") |> stringr::str_extract("[a-z ]+") |>
+        stringr::str_trim() |> stringr::str_replace_all(" ",
                                                          "_")
       dates <-
-        descs %>% stringr::str_extract("[0-9]{2}/[0-9]{2}/[0-9]{4}") %>%
+        descs |> stringr::str_extract("[0-9]{2}/[0-9]{2}/[0-9]{4}") |>
         lubridate::dmy()
       links <- stringr::str_c("https://esaj.tjsp.jus.br",
                               links)

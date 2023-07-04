@@ -18,6 +18,7 @@ da_luiza <- obsFase3::da_processo_tidy |>
     listcred_aj_teve,
     listcred_aj_val,
     dt_listcred_aj,
+    info_ativo_val,
     dt_extincao,
     info_fal_extin_caucao,
     dt_decisao

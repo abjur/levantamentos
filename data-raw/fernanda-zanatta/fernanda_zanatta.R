@@ -3,8 +3,17 @@
 mes_fim <- lubridate::today() |> lubridate::month()
 mes_inicio <- mes_fim - 1
 
-dt_ini = glue::glue("2023-0{mes_inicio}-17")
-dt_fim = glue::glue("2023-0{mes_fim}-17")
+if(mes_fim < 10) {
+  dt_ini <- glue::glue("2023-0{mes_inicio}-17")
+  dt_fim <- glue::glue("2023-0{mes_fim}-16")
+} else if(mes_fim == 10) {
+  dt_ini <- glue::glue("2023-0{mes_inicio}-17")
+  dt_fim <- glue::glue("2023-{mes_fim}-16")
+} else {
+  dt_ini <- glue::glue("2023-{mes_inicio}-17")
+  dt_fim <- glue::glue("2023-{mes_fim}-16")
+}
+
 
 trf4_cjsg_tidy <- function(da) {
   da |>
@@ -88,13 +97,16 @@ googlesheets4::gs4_auth("rfeliz@abj.org.br")
 
 link <- "https://docs.google.com/spreadsheets/d/1EGbkYaohqakJ9ues2A3ch6CcH88xT37MM2krih1fju8/edit?usp=sharing"
 
-nome_arquivo <- glue::glue("da_{mes_inicio}_{mes_fim}")
+if(mes_fim < 10) {
+  nome_arquivo <- glue::glue("da_0{mes_inicio}_0{mes_fim}")
+} else if(mes_fim == 10) {
+  nome_arquivo <- glue::glue("da_0{mes_inicio}_{mes_fim}")
+} else {
+  nome_arquivo <- glue::glue("da_{mes_inicio}_{mes_fim}")
+}
 
 googlesheets4::write_sheet(
   da_trf4,
   link,
   nome_arquivo
 )
-
-# writexl::write_xlsx(da_04_05, path = "data-raw/fernanda-zanatta/xlsx/da_04_05.xlsx")
-
