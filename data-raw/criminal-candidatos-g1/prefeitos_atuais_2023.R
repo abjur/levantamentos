@@ -113,3 +113,4 @@ cpopg <- purrr::map(
   dir = "data-raw/criminal-candidatos-g1/cpopg_prefeitos2023",
   .progress = TRUE
 )
+
