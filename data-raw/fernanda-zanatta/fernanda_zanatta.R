@@ -86,6 +86,9 @@ for(tipo_pesquisa in tipos_pesquisa){
       rel
     )
 
+  fs::dir_ls(dir) |>
+    purrr::map(fs::file_delete)
+
   da_trf4 <- da_trf4 |>
     dplyr::bind_rows(da)
 
@@ -93,10 +96,18 @@ for(tipo_pesquisa in tipos_pesquisa){
 
 # salva --------------------------------------------------------------------
 
+# 1) autenticar
+# se eu estiver no servidor
+obsutils::autenticar_gsheets()
+# e compartilha o arquivo com o email: obsdash@abj-dev.iam.gserviceaccount.com
+
+# se eu estiver no local
 googlesheets4::gs4_auth("rfeliz@abj.org.br")
 
+# 2) salva o link
 link <- "https://docs.google.com/spreadsheets/d/1EGbkYaohqakJ9ues2A3ch6CcH88xT37MM2krih1fju8/edit?usp=sharing"
 
+# 3) nome do arquivo
 if(mes_fim < 10) {
   nome_arquivo <- glue::glue("da_0{mes_inicio}_0{mes_fim}")
 } else if(mes_fim == 10) {
@@ -105,6 +116,7 @@ if(mes_fim < 10) {
   nome_arquivo <- glue::glue("da_{mes_inicio}_{mes_fim}")
 }
 
+# 4) roda tudo :)
 googlesheets4::write_sheet(
   da_trf4,
   link,
