@@ -1740,34 +1740,66 @@ ggplot2::ggsave(
 )
 
 # i) ----------------------------------------------------------------------
-# da24gi <-
-da |>
+da24gi <-da |>
   dplyr::filter(causa_de_extincao_da_punibilidade == "Prescrição") |>
   dplyr::transmute(
     dt_dist,
-    dt_pronuncia,
-    dt_extincao_punibilidade = dplyr::case_when(
-      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
-    ),
-    # dt_fim = dplyr::coalesce(dt_pronuncia, dt_extincao_punibilidade),
-    tempo = dt_pronuncia - dt_dist
+    dt_plenario,
+    tempo = dt_plenario - dt_dist
   ) |>
-  dplyr::filter(!is.na(tempo))
+  dplyr::filter(tempo > 0)
+
+n24gi <- nrow(da24gi)
+
+media_24gi <- round(mean(da24gi$tempo))
+
+p24gi <- da24gi |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
+  ggplot2::geom_vline(xintercept = media_24g, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 6300, y = 2.5), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a denúncia a sentença de extinção da punibilidade, no caso de prescrição (N = {n24gi})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24gi.png",
+  p24gi, width = 10, height = 5
+)
 
 # ii) ---------------------------------------------------------------------
-
-da |>
+da24gii <- da |>
   dplyr::filter(causa_de_extincao_da_punibilidade == "Morte do agente") |>
   dplyr::transmute(
     dt_dist,
-    dt_pronuncia,
-    dt_extincao_punibilidade = dplyr::case_when(
-      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
-    ),
-    # dt_fim = dplyr::coalesce(dt_pronuncia, dt_extincao_punibilidade),
-    tempo = dt_pronuncia - dt_dist
-  )
+    dt_plenario,
+    tempo = dt_plenario - dt_dist
+  ) |>
   dplyr::filter(!is.na(tempo))
+
+n24gii <- nrow(da24gii)
+
+media_24gii <- round(mean(da24gii$tempo))
+
+p24gii <- da24gii |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = tempo) +
+  ggplot2::geom_histogram(fill = cores_abj[1], bins = 50) +
+  ggplot2::geom_vline(xintercept = media_24g, color = "red", linetype = 2) +
+  ggplot2::geom_text(ggplot2::aes(label = paste0(media_24g, " dias"), x = 6300, y = 2.5), color = "red") +
+  ggplot2::labs(
+    title = glue::glue("Tempo entre a denúncia a sentença de extinção da punibilidade, no caso de morte do agente (N = {n24gii})"),
+    x = "Tempo (dias)",
+    y = "Quantidade de processos"
+  )
+
+ggplot2::ggsave(
+  "data-raw/bruno-nassar-puc/img/p24gii.png",
+  p24gii, width = 10, height = 5
+)
 
 # h) do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou absolvição imprópria;  -----------------------------------------------------------------------
 da24h <- da |>
