@@ -119,3 +119,78 @@ da_danielly <- obsFase3::da_processo_tidy |>
   )
 
 writexl::write_xlsx(da_danielly, "data-raw/nepi_2022/xlsx/da_danielly.xlsx")
+
+# pedido novo -------------------------------------------------------------
+
+cnpjs_individuais <- obsFase3::aux_rfb |>
+  dplyr::filter(stringr::str_detect(nm_subclass_natureza_juridica, "Individual")) |>
+  dplyr::pull(cnpj)
+
+da_partes <- obsFase3::da_processo_tidy |>
+  dplyr::select(id_processo, planilha_partes) |>
+  dplyr::filter(purrr::map_int(planilha_partes, nrow) > 0) |>
+  dplyr::mutate(planilha_partes = purrr::map(
+    planilha_partes, dplyr::mutate_all, as.character
+  )) |>
+  tidyr::unnest(planilha_partes) |>
+  dplyr::filter(!is.na(nome)) |>
+  dplyr::transmute(
+    id_processo,
+    nome,
+    forma_participacao = dplyr::coalesce(forma_participacao, ...5),
+    polo,
+    cnpj,
+    convolou = no_caso_de_litisconsorcio_convolou_em_falencia,
+    consolidacao_substancial = `houve_consolidacao_ substancial`
+  )
+
+processos_empresarios_individuais <- da_partes |>
+  dplyr::mutate(
+    cnpj = stringr::str_remove_all(cnpj, "[:punct:]")
+  ) |>
+  dplyr::filter(cnpj %in% cnpjs_individuais) |>
+  dplyr::distinct(id_processo) |>
+  dplyr::pull(id_processo)
+
+da_danielly2 <- obsFase3::da_processo_tidy |>
+  dplyr::filter(id_processo %in% processos_empresarios_individuais) |>
+  dplyr::mutate(
+    litis = ifelse(id_processo %in% litis, "Sim", "Não")
+  ) |>
+  dplyr::select(
+    id_processo,
+    ano_dist,
+    info_classe,
+    info_assunto,
+    info_digital,
+    info_foro,
+    info_conv,
+    info_autofal,
+    dt_decisao,
+    info_fal_dec,
+    info_fal_dec_fund,
+    listcred_devedor_teve,
+    listcred_devedor_val,
+    dt_listcred_devedor,
+    listcred_aj_teve,
+    listcred_aj_val,
+    dt_listcred_aj,
+    aj_pfpj,
+    info_ativo_val,
+    info_104,
+    info_fal_acabou,
+    dt_fal_fim,
+    dt_dist,
+    info_origem,
+    dt_extincao,
+    info_aj_crime,
+    dt_assinatura_tc,
+    info_aj_relatorio,
+    info_aj_relatorio_mp,
+    info_obrig_extin,
+    info_fal_extin_caucao,
+    dplyr::contains("pgto"),
+    litis
+  )
+
+writexl::write_xlsx(da_danielly2, "data-raw/nepi_2022/xlsx/da_danielly2.xlsx")
