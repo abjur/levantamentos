@@ -122,9 +122,6 @@ writexl::write_xlsx(da_danielly, "data-raw/nepi_2022/xlsx/da_danielly.xlsx")
 
 # pedido novo -------------------------------------------------------------
 
-cnpjs_individuais <- obsFase3::aux_rfb |>
-  dplyr::filter(stringr::str_detect(nm_subclass_natureza_juridica, "Individual")) |>
-  dplyr::pull(cnpj)
 
 da_partes <- obsFase3::da_processo_tidy |>
   dplyr::select(id_processo, planilha_partes) |>
@@ -144,6 +141,10 @@ da_partes <- obsFase3::da_processo_tidy |>
     consolidacao_substancial = `houve_consolidacao_ substancial`
   )
 
+cnpjs_individuais <- obsFase3::aux_rfb |>
+  dplyr::filter(nm_subclass_natureza_juridica == "Empresa Individual de Responsabilidade Limitada (de Natureza Simples)") |>
+  dplyr::pull(cnpj)
+
 processos_empresarios_individuais <- da_partes |>
   dplyr::mutate(
     cnpj = stringr::str_remove_all(cnpj, "[:punct:]")
@@ -152,7 +153,7 @@ processos_empresarios_individuais <- da_partes |>
   dplyr::distinct(id_processo) |>
   dplyr::pull(id_processo)
 
-da_danielly2 <- obsFase3::da_processo_tidy |>
+da_individual09 <- obsFase3::da_processo_tidy |>
   dplyr::filter(id_processo %in% processos_empresarios_individuais) |>
   dplyr::mutate(
     litis = ifelse(id_processo %in% litis, "Sim", "Não")
@@ -193,4 +194,4 @@ da_danielly2 <- obsFase3::da_processo_tidy |>
     litis
   )
 
-writexl::write_xlsx(da_danielly2, "data-raw/nepi_2022/xlsx/da_danielly2.xlsx")
+writexl::write_xlsx(da_individual09, "data-raw/nepi_2022/xlsx/da_individual09.xlsx")

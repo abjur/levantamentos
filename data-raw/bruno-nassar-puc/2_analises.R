@@ -1671,7 +1671,7 @@ p24f <- da24f |>
   ggplot2::geom_vline(xintercept = media_24f, color = "red", linetype = 2) +
   ggplot2::geom_text(ggplot2::aes(label = paste0(media_24f, " dias"), x = 1500, y = 7.5), color = "red") +
   ggplot2::labs(
-    title = glue::glue("Tempo entre a denúncia e a \"sentença\" de pronúncia (N = {n24f})"),
+    title = glue::glue("Tempo entre o recebimento da denúncia e a \"sentença\" de pronúncia (N = {n24f})"),
     x = "Tempo (dias)",
     y = "Quantidade de processos"
   )
@@ -1738,6 +1738,36 @@ ggplot2::ggsave(
   "data-raw/bruno-nassar-puc/img/p24g.png",
   p24g, width = 10, height = 5
 )
+
+# i) ----------------------------------------------------------------------
+# da24gi <-
+da |>
+  dplyr::filter(causa_de_extincao_da_punibilidade == "Prescrição") |>
+  dplyr::transmute(
+    dt_dist,
+    dt_pronuncia,
+    dt_extincao_punibilidade = dplyr::case_when(
+      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
+    ),
+    # dt_fim = dplyr::coalesce(dt_pronuncia, dt_extincao_punibilidade),
+    tempo = dt_pronuncia - dt_dist
+  ) |>
+  dplyr::filter(!is.na(tempo))
+
+# ii) ---------------------------------------------------------------------
+
+da |>
+  dplyr::filter(causa_de_extincao_da_punibilidade == "Morte do agente") |>
+  dplyr::transmute(
+    dt_dist,
+    dt_pronuncia,
+    dt_extincao_punibilidade = dplyr::case_when(
+      natureza_decisao == "Sentença de extinção da punibilidade" ~ dt_plenario
+    ),
+    # dt_fim = dplyr::coalesce(dt_pronuncia, dt_extincao_punibilidade),
+    tempo = dt_pronuncia - dt_dist
+  )
+  dplyr::filter(!is.na(tempo))
 
 # h) do recebimento até a impronúncia, desclassificação na primeira fase, absolvição sumária ou absolvição imprópria;  -----------------------------------------------------------------------
 da24h <- da |>
