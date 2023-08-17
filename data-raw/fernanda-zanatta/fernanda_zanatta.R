@@ -14,33 +14,6 @@ if(mes_fim < 10) {
   dt_fim <- glue::glue("2023-{mes_fim}-16")
 }
 
-
-trf4_cjsg_tidy <- function(da) {
-  da |>
-    dplyr::mutate(
-      key = ifelse(
-        test = key == val,
-        yes = NA_character_,
-        no = key
-      ),
-      key = ifelse(
-        test = stringr::str_detect(val, "^[\\w ]+\\:"),
-        yes = stringr::str_extract(val, "^[\\w ]+\\:"),
-        no = key
-      ),
-      key = stringr::str_remove(key, "\\:"),
-      key = ifelse(
-        test = stringr::str_detect(key, "[0-9]"),
-        yes = "Tipo",
-        no = key
-      ),
-      key = ifelse(key %in% c("Relatora", "Relator"), "Rel", key),
-      val = stringr::str_remove_all(val, "^.+\\: ")
-    ) |>
-    tidyr::pivot_wider(names_from = key, values_from = val) |>
-    janitor::clean_names()
-}
-
 # download e parse --------------------------------------------------------
 
 tipos_pesquisa <- c("Turmas Recursais", "TRF4")
@@ -67,8 +40,6 @@ for(tipo_pesquisa in tipos_pesquisa){
   # parse
   da <- fs::dir_ls(dir) |>
     purrr::map_dfr(lex::trf4_cjsg_parse) |>
-    dplyr::mutate(data = purrr::map_dfr(data, trf4_cjsg_tidy)) |>
-    tidyr::unnest(data) |>
     dplyr::mutate(
       origem = tipo_pesquisa
     ) |>
@@ -77,13 +48,13 @@ for(tipo_pesquisa in tipos_pesquisa){
       classe = stringr::str_squish(classe),
       classe = stringr::str_remove(classe, "^- ")
     ) |>
-    dplyr::select(
+    dplyr::transmute(
       processo,
       origem,
       tipo,
       classe,
       data_da_decisao,
-      rel
+      rel = dplyr::coalesce(relator, relatora)
     )
 
   fs::dir_ls(dir) |>
@@ -95,6 +66,11 @@ for(tipo_pesquisa in tipos_pesquisa){
 }
 
 # salva --------------------------------------------------------------------
+
+
+# 0) se precisar transferir do servidor para o pessoal --------------------
+
+readr::write_rds(da_trf4, "data-raw/fernanda-zanatta/da/da_trf4.rds")
 
 # 1) autenticar
 # se eu estiver no servidor
