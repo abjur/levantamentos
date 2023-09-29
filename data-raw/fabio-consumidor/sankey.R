@@ -1,4 +1,4 @@
-# sankey completo ---------------------------------------------------------
+# base de dados ---------------------------------------------------------
 
 set.seed(1)
 da <- tibble::tibble(
@@ -51,3 +51,59 @@ for(i in da$id) {
   da$etapa4[da$id == i] = etapa4
 }
 
+readr::write_rds(da, "data-raw/fabio-consumidor/da_sankey.rds")
+
+# sankey completo ---------------------------------------------------------
+da <- readr::read_rds("data-raw/fabio-consumidor/da_sankey.rds")
+cores_abj <-  viridis::viridis(4, 1, .2, .8)
+
+da_lodes <- da |>
+  tidyr::pivot_longer(cols = dplyr::contains("etapa"), names_to = "etapa") |>
+  dplyr::filter(!is.na(value))
+
+ggplot2::ggplot(da_lodes,
+                ggplot2::aes(
+                  x = etapa,
+                  stratum = value,
+                  alluvium = id,
+                  fill = value,
+                  label = value
+                )) +
+  ggalluvial::geom_flow() +
+  ggalluvial::geom_stratum() +
+  ggplot2::scale_fill_manual(values = cores_abj, name = "Via") +
+  ggplot2::theme_minimal(16) +
+  ggplot2::theme(
+    axis.title.x = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_blank(),
+    legend.position = c(.8, .5)
+  )
+
+# sankey parcial ---------------------------------------------------------
+da <- readr::read_rds("data-raw/fabio-consumidor/da_sankey.rds")
+cores_abj <-  viridis::viridis(4, 1, .2, .8)
+
+da_lodes <- da |>
+  tidyr::pivot_longer(cols = dplyr::contains("etapa"), names_to = "etapa") |>
+  dplyr::filter(
+    !is.na(value),
+    etapa %in% c("etapa3", "etapa4")
+  )
+
+ggplot2::ggplot(da_lodes,
+                ggplot2::aes(
+                  x = etapa,
+                  stratum = value,
+                  alluvium = id,
+                  fill = value,
+                  label = value
+                )) +
+  ggalluvial::geom_flow() +
+  ggalluvial::geom_stratum() +
+  ggplot2::scale_fill_manual(values = c(cores_abj[1], cores_abj[2], cores_abj[3]), name = "Via") +
+  ggplot2::theme_minimal(16) +
+  ggplot2::theme(
+    axis.title.x = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_blank(),
+    legend.position = c(.8, .5)
+  )
