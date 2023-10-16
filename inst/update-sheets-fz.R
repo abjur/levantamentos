@@ -1,6 +1,6 @@
 # preparação --------------------------------------------------------------
 
-mes_fim <- lubridate::today() |> lubridate::month() - 1
+mes_fim <- lubridate::today() |> lubridate::month()
 mes_inicio <- mes_fim - 1
 
 if(mes_fim < 10) {
@@ -14,6 +14,7 @@ if(mes_fim < 10) {
   dt_fim <- glue::glue("2023-{mes_fim}-16")
 }
 
+
 # download e parse --------------------------------------------------------
 
 tipos_pesquisa <- c("Turmas Recursais", "TRF4")
@@ -25,7 +26,7 @@ for(tipo_pesquisa in tipos_pesquisa){
   if(tipo_pesquisa == "TRF4") {
     dir <- "data-raw/fernanda-zanatta/html/trf4"
   } else {
-   dir <- "data-raw/fernanda-zanatta/html/turmas_recursais"
+    dir <- "data-raw/fernanda-zanatta/html/turmas_recursais"
   }
 
   # download
@@ -67,19 +68,9 @@ for(tipo_pesquisa in tipos_pesquisa){
 
 # salva --------------------------------------------------------------------
 
-# 0) se precisar transferir do servidor para o pessoal --------------------
-
-readr::write_rds(da_trf4, "data-raw/fernanda-zanatta/da/da_trf4.rds")
-
-# e depois comita
-
 # 1) autenticar
-# se eu estiver no servidor
 obsutils::autenticar_gsheets()
 # e compartilha o arquivo com o email: obsdash@abj-dev.iam.gserviceaccount.com
-
-# se eu estiver no local
-googlesheets4::gs4_auth("rfeliz@abj.org.br")
 
 # 2) salva o link
 link <- "https://docs.google.com/spreadsheets/d/1EGbkYaohqakJ9ues2A3ch6CcH88xT37MM2krih1fju8/edit?usp=sharing"
