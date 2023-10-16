@@ -1,11 +1,10 @@
 on:
-  workflow_dispatch:
+  # workflow_dispatch:
   schedule:
-    - cron: '0 7 18 * *'
-
+    - cron: '00 07 18 * *'
 name: fz
 jobs:
-  update:
+  update-sheets:
     name: Update sheets with TRF4's proccess
     runs-on: ubuntu-latest
     env:
