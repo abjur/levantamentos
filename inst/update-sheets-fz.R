@@ -1,6 +1,6 @@
 # preparação --------------------------------------------------------------
 
-mes_fim <- lubridate::today() |> lubridate::month() - 1
+mes_fim <- lubridate::today() |> lubridate::month()
 mes_inicio <- mes_fim - 1
 
 if(mes_fim < 10) {
