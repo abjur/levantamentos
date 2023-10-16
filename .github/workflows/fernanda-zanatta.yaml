@@ -30,6 +30,7 @@ jobs:
             any::fs
             any::googlesheets4
             any::abjutils
+            any::remotes
 
       - name: Install remotes, and the updated package
         run: |
