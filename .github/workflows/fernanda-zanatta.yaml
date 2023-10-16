@@ -5,7 +5,7 @@ on:
 
 name: fz
 jobs:
-  update-sheets:
+  update:
     name: Atualiza o sheets com processos do TRF4
     runs-on: ubuntu-latest
     env:
