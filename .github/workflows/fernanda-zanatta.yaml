@@ -1,8 +1,8 @@
-name: fernanda-zanatta
 on:
   workflow_dispatch:
   schedule:
   - cron: '00 07 18 * *'
+
 jobs:
   update-sheets:
     name: Atualiza o sheets com processos do TRF4
