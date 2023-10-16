@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: '00 07 18 * *'
 
+name: fz
 jobs:
   update-sheets:
     name: Atualiza o sheets com processos do TRF4
