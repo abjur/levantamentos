@@ -1,5 +1,5 @@
 on:
-  # workflow_dispatch:
+  workflow_dispatch:
   schedule:
     - cron: '00 07 18 * *'
 name: fz
