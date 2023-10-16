@@ -6,7 +6,7 @@ on:
 name: fz
 jobs:
   update:
-    name: Atualiza o sheets com processos do TRF4
+    name: update-sheets-trf4
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.PAT }}
