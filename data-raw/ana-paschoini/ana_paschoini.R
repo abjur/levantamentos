@@ -5,7 +5,8 @@ sp <- obsFase2::da_relatorio |>
   dplyr::transmute(
     id_processo = n_processo,
     dt_dist = dplyr::coalesce(data_dist, data_dist2),
-    origem = "SP"
+    origem = "SP",
+    upi_vendeu
   )
 
 rj <- obsRJRJ::da_processo_tidy |>

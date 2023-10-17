@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: '00 07 18 * *'
+  #   - cron: '00 07 17 * *'
 name: update-sheets-fz
 jobs:
   update-sheets:
