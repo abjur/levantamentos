@@ -56,7 +56,7 @@ mais_demorados <- obsFase3::da_processo_tidy |>
 
 writexl::write_xlsx(mais_demorados, "data-raw/valor/xlsx/mais_demorados.xlsx")
 
-# as 10 com maiores valores envolvidos (e o principal credor)
+# 10 falências mais antigas que não foram concluídas (e o principal credor)
 
 mais_antigos <- obsFase3::da_processo_tidy |>
   dplyr::filter(dt_dist >= lubridate::dmy("01/01/2010")) |>
@@ -65,13 +65,14 @@ mais_antigos <- obsFase3::da_processo_tidy |>
   ) |>
   dplyr::filter(is.na(dt_fim)) |>
   dplyr::mutate(
-    tempo = lubridate::today() - dt_dist
+    tempo = data_hora - dt_dist
   ) |>
   dplyr::arrange(desc(tempo)) |>
   head(10) |>
   dplyr::select(
     id_processo,
     dt_dist,
+    dt_classificado = data_hora,
     tempo
   )
 
