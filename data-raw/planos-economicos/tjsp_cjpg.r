@@ -33,3 +33,8 @@ decisoes <- lex::tjsp_cjpg_download(
   busca = "", dir = "data-raw/planos-economicos/tjsp_cjpg",
   assunto = id, data_ini = "2023-01-01", data_fim = "2023-12-31"
 )
+
+fs::dir_ls("data-raw/planos-economicos/tjsp_cjpg")
+
+"/mnt/dados/abj/paginas/STJ/txt" |>
+  fs::dir_ls()
