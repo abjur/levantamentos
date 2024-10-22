@@ -2,7 +2,7 @@ daRJRJ <- obsRJRJ::da_parte_tidy |>
   dplyr::distinct(id_processo, cnpj) |>
   dplyr::left_join(
     x = obsRJRJ::da_rjrj |>
-      dplyr::select(id_processo, dplyr::contains("leilao"), upi_teve) |>
+      dplyr::select(id_processo, digital, dplyr::contains("leilao"), upi_teve) |>
       dplyr::mutate(
         upi_vendeu = NA_character_
       ),
@@ -18,6 +18,7 @@ daRJSP <- obsFase2::da_relatorio |>
   dplyr::transmute(
     id_processo = n_processo,
     cnpj,
+    digital = NA_character_,
     leilao_teve = leilao,
     leilao_data = as.Date(NA),
     leilao_vendeu = NA_character_,
@@ -37,7 +38,7 @@ daRJRS <- obsRJRS::da_parte_tidy |>
   dplyr::distinct(id_processo, cnpj) |>
   dplyr::left_join(
     x = obsRJRS::da_rjrs |>
-      dplyr::select(id_processo, leilao_teve, leilao_data, leilao_vendeu, upi_teve) |>
+      dplyr::select(id_processo, digital, leilao_teve, leilao_data, leilao_vendeu, upi_teve) |>
       dplyr::mutate(
         upi_vendeu = NA_character_
       ),
